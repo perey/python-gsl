@@ -123,13 +123,13 @@ References
 
 .. [Antosiewicz1964] Antosiewicz, H. A. (1964).
    `Bessel functions of fractional order`_.
-   In Abramowitz, M., & Stegun, (Eds.). (1964). *Handbook of Mathematical
+   In Abramowitz, M., & Stegun, I. A. (Eds.). (1964). *Handbook of Mathematical
    Functions with Formulas, Graphs, and Mathematical Tables* (10th printing
    with corrections, 1972). Washington, D.C.: National Bureau of Standards.
 
 .. [Olver1964] Olver, F. W. J (1964).
    `Bessel functions of integer order`_.
-   In Abramowitz, M., & Stegun, (Eds.). (1964). *Handbook of Mathematical
+   In Abramowitz, M., & Stegun, I. A. (Eds.). (1964). *Handbook of Mathematical
    Functions with Formulas, Graphs, and Mathematical Tables* (10th printing
    with corrections, 1972). Washington, D.C.: National Bureau of Standards.
 
