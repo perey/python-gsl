@@ -59,7 +59,7 @@ error-handling versions.
 
 .. py:function:: Bi_scaled_e(x, precision=Mode.default)
 
-Evaluate :math:`Ai(x)`, the Airy function of the second kind, in natural and
+Evaluate :math:`Bi(x)`, the Airy function of the second kind, in natural and
 error-handling versions, with a scaling factor applied. For :math:`x < 0`,
 the scaling factor is 1. For :math:`x > 0`, over which
 :math:`Bi(x) \to \infty`, the scaling factor is
