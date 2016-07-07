@@ -56,7 +56,7 @@ def alloc(size, init=False):
     block_p = alloc_fn(size)
     if not block_p:
         # Null pointer returned; insufficient memory is available.
-        raise exception_from_result(GSL_ENOMEM)
+        raise exception_from_result(NO_MEMORY)
     else:
         return block_p
 
