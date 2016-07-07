@@ -50,7 +50,7 @@ class TestBlock(unittest.TestCase):
 
     def test_calloc(self):
         """Test block allocation, initialisation, and freeing."""
-        my_block_p = block.calloc(self.BLOCK_SIZE)
+        my_block_p = block.alloc(self.BLOCK_SIZE, init=True)
         my_block = my_block_p.contents
 
         self.assertEqual(my_block.size, self.BLOCK_SIZE)

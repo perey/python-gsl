@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License
 # along with python-gsl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ['gsl_block_p', 'alloc', 'calloc', 'free']
+__all__ = ['gsl_block_p', 'alloc', 'free']
 
 # Standard library imports.
 from ctypes import Structure, c_double, c_size_t, POINTER
@@ -46,22 +46,14 @@ gsl_block_p = POINTER(Block)
 native.gsl_block_alloc.argtypes = (c_size_t,)
 native.gsl_block_alloc.restype = gsl_block_p
 
-def alloc(size):
-    """Allocate an uninitialized block of memory."""
-    block_p = native.gsl_block_alloc(size)
-    if not block_p:
-        # Null pointer returned; insufficient memory is available.
-        raise exception_from_result(GSL_ENOMEM)
-    else:
-        return block_p
-
-
 native.gsl_block_calloc.argtypes = (c_size_t,)
 native.gsl_block_calloc.restype = gsl_block_p
 
-def calloc(size):
-    """Allocate a block of memory with all elements zeroed out."""
-    block_p = native.gsl_block_calloc(size)
+def alloc(size, init=False):
+    """Allocate a new block of memory."""
+    # Use calloc to initialise the new block, or alloc otherwise.
+    alloc_fn = native.gsl_block_calloc if init else native.gsl_block_alloc
+    block_p = alloc_fn(size)
     if not block_p:
         # Null pointer returned; insufficient memory is available.
         raise exception_from_result(GSL_ENOMEM)
