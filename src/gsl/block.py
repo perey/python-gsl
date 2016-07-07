@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License
 # along with python-gsl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ['alloc', 'calloc', 'free']
+__all__ = ['gsl_block_p', 'alloc', 'calloc', 'free']
 
 # Standard library imports.
 from ctypes import Structure, c_double, c_size_t, POINTER
