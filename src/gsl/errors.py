@@ -27,7 +27,6 @@ __all__ = ['error_codes', 'exception_from_result']
 
 # Standard library imports.
 from ctypes import c_char_p, c_int
-from functools import wraps
 
 # Local imports.
 from . import native
