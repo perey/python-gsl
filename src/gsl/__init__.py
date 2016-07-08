@@ -23,12 +23,12 @@
 # You should have received a copy of the GNU General Public License
 # along with python-gsl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ['native', 'gsl_mode_t', 'Mode',
-           'errors', 'sf']
+__all__ = ['native', 'gsl_complex', 'gsl_mode_t', 'Mode',
+           'block', 'vector', 'errors', 'sf']
 
 # Standard library imports.
 from enum import IntEnum
-from ctypes import CDLL, c_uint, c_void_p
+from ctypes import CDLL, Structure, c_double, c_uint, c_void_p
 import sys
 
 # Load the native library.
@@ -47,6 +47,25 @@ native.gsl_set_error_handler_off.restype = c_void_p
 # TODO: This is the recommended setting for production code, but should it be
 # configurable by advanced users?
 native.gsl_set_error_handler_off()
+
+# Define GSL complex number formats.
+class gsl_complex(Structure):
+    _fields_ = [('dat', c_double * 2)]
+
+    @classmethod
+    def from_complex(cls, c):
+        """Convert a Python complex number to a gsl_complex object."""
+        return cls((c.real, c.imag))
+
+    def __complex__(self):
+        """Convert this gsl_complex object to a Python complex number."""
+        return complex(*self.dat)
+
+    def __eq__(self, other):
+        """Compare for itemwise equality between this and another value."""
+        return (isinstance(other, self.__class__) and
+                all(mine == others for mine, others in zip(self.dat,
+                                                           other.dat)))
 
 # Define mode (precision) specifiers.
 gsl_mode_t = c_uint
