@@ -23,7 +23,8 @@ In order to ease porting, GSL_ provides its own implementation of standard C
 mathematical functions and constants. Since Python already provides a binding
 to these in the standard library's `math`_, these are not exposed by
 python-gsl. Likewise, the complex number facilities in GSL are not exposed; use
-cmath_ instead.
+cmath_ instead. (However, the GSL *representation* of complex numbers is
+provided; see :py:obj:`gsl_complex`.)
 
 However, as at least some of the GSL_ versions of these functions make certain
 accuracy guarantees, it may be the case that bindings are provided in a future
