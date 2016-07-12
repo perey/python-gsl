@@ -11,6 +11,7 @@ Contents
    intro
    gsl
    sf
+   vec_mat
 
 Indices and tables
 ==================
