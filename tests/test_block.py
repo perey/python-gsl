@@ -30,13 +30,20 @@ import unittest
 # Library to be tested.
 from gsl import block
 
+# Test dependency.
+from gsl import gsl_complex
+
+# Data types supported.
+typecodes = {'d': (float, float, 0.0),
+             'C': (gsl_complex, complex, 0+0j)}
+
 # Test cases.
 class TestBlock(unittest.TestCase):
     """Test the memory block functions in python-gsl."""
     BLOCK_SIZE = 10
 
     def test_alloc(self):
-        """Test block allocation and freeing."""
+        """Test allocating and freeing blocks."""
         my_block_p = block.alloc(self.BLOCK_SIZE)
         my_block = my_block_p.contents
 
@@ -49,7 +56,7 @@ class TestBlock(unittest.TestCase):
         block.free(my_block_p)
 
     def test_calloc(self):
-        """Test block allocation, initialisation, and freeing."""
+        """Test allocating, initialising, and freeing blocks."""
         my_block_p = block.alloc(self.BLOCK_SIZE, init=True)
         my_block = my_block_p.contents
 
@@ -61,3 +68,36 @@ class TestBlock(unittest.TestCase):
             self.assertEqual(my_block.data[i], 0.0)
 
         block.free(my_block_p)
+
+    def test_alloc_by_type(self):
+        """Test allocating and freeing blocks by type code."""
+        for typecode in typecodes:
+            itemtype, _, _ = typecodes[typecode]
+
+            my_block_p = block.alloc(self.BLOCK_SIZE, typecode=typecode)
+            my_block = my_block_p.contents
+
+            self.assertEqual(my_block.size, self.BLOCK_SIZE)
+            self.assertIsInstance(my_block, Structure)
+
+            for i in range(self.BLOCK_SIZE):
+                self.assertIsInstance(my_block.data[i], itemtype)
+
+            block.free(my_block_p, typecode=typecode)
+
+    def test_calloc_by_type(self):
+        """Test allocating, initialising and freeing blocks by type code."""
+        for typecode in typecodes:
+            itemtype, conversion, initval = typecodes[typecode]
+
+            my_block_p = block.alloc(self.BLOCK_SIZE, typecode=typecode)
+            my_block = my_block_p.contents
+
+            self.assertEqual(my_block.size, self.BLOCK_SIZE)
+            self.assertIsInstance(my_block, Structure)
+
+            for i in range(self.BLOCK_SIZE):
+                self.assertIsInstance(my_block.data[i], itemtype)
+            self.assertEqual(conversion(my_block.data[i]), initval)
+
+            block.free(my_block_p, typecode=typecode)
