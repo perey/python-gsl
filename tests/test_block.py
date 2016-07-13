@@ -98,6 +98,6 @@ class TestBlock(unittest.TestCase):
 
             for i in range(self.BLOCK_SIZE):
                 self.assertIsInstance(my_block.data[i], itemtype)
-            self.assertEqual(conversion(my_block.data[i]), initval)
+                self.assertEqual(conversion(my_block.data[i]), initval)
 
             block.free(my_block_p, typecode=typecode)
