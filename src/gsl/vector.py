@@ -29,14 +29,14 @@ __all__ = []
 from ctypes import Structure, c_double, c_int, c_size_t, POINTER
 
 # Local imports.
-from . import native
-from .block import gsl_block_p
+from . import native, gsl_complex
+from .block import gsl_block_p, gsl_block_complex_p
 from .errors import exception_from_result
 
 # GSL_ENOMEM error code.
 NO_MEMORY = 8
 
-# Native struct definition.
+# Native struct definitions.
 class Vector(Structure):
     _fields_ = [('size', c_size_t),
                 ('stride', c_size_t),
@@ -45,6 +45,14 @@ class Vector(Structure):
                 ('owner', c_int)]
 
 gsl_vector_p = POINTER(Vector)
+class VectorComplex(Structure):
+    _fields_ = [('size', c_size_t),
+                ('stride', c_size_t),
+                ('data', POINTER(gsl_complex)),
+                ('block', gsl_block_complex_p),
+                ('owner', c_int)]
+
+gsl_vector_complex_p = POINTER(VectorComplex)
 
 # Native function declarations.
 native.gsl_vector_alloc.argtypes = (c_size_t,)
@@ -53,11 +61,25 @@ native.gsl_vector_alloc.restype = gsl_vector_p
 native.gsl_vector_calloc.argtypes = (c_size_t,)
 native.gsl_vector_calloc.restype = gsl_vector_p
 
-def alloc(size, init=False):
+native.gsl_vector_complex_alloc.argtypes = (c_size_t,)
+native.gsl_vector_complex_alloc.restype = gsl_vector_complex_p
+
+native.gsl_vector_complex_calloc.argtypes = (c_size_t,)
+native.gsl_vector_complex_calloc.restype = gsl_vector_complex_p
+
+def alloc(size, typecode='d', init=False):
     """Allocate a vector in a new memory block."""
     # Use calloc to initialise the new block, or alloc otherwise.
-    alloc_fn = native.gsl_vector_calloc if init else native.gsl_vector_alloc
-    vector_p = alloc_fn(size)
+    alloc_fns = {'d': (native.gsl_vector_alloc, native.gsl_vector_calloc),
+                 'C': (native.gsl_vector_complex_alloc,
+                       native.gsl_vector_complex_calloc)
+                 }.get(typecode)
+    if alloc_fns is None:
+        raise ValueError('unknown type code {!r}'.format(typecode))
+
+    fn_without_init, fn_with_init = alloc_fns
+
+    vector_p = (fn_with_init if init else fn_without_init)(size)
     if not vector_p:
         # Null pointer returned; insufficient memory is available.
         raise exception_from_result(NO_MEMORY)
@@ -66,7 +88,14 @@ def alloc(size, init=False):
 
 
 native.gsl_vector_free.argtypes = (gsl_vector_p,)
+native.gsl_vector_complex_free.argtypes = (gsl_vector_complex_p,)
 
-def free(vector_p):
+def free(vector_p, typecode='d'):
     """Free the memory allocated to a vector."""
-    native.gsl_vector_free(vector_p)
+    free_fn = {'d': native.gsl_vector_free,
+                'C': native.gsl_vector_complex_free
+                }.get(typecode)
+    if free_fn is None:
+        raise ValueError('unknown type code {!r}'.format(typecode))
+
+    free_fn(vector_p)

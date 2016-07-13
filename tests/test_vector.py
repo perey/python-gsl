@@ -30,13 +30,20 @@ import unittest
 # Library to be tested.
 from gsl import vector
 
+# Test dependency.
+from gsl import gsl_complex
+
+# Data types supported.
+typecodes = {'d': (float, float, 0.0),
+             'C': (gsl_complex, complex, 0+0j)}
+
 # Test cases.
 class TestVectorMemory(unittest.TestCase):
     """Test the low-level vector memory functions in python-gsl."""
     VECTOR_SIZE = 10
 
     def test_alloc(self):
-        """Test vector allocation and freeing."""
+        """Test allocating and freeing vectors."""
         v_p = vector.alloc(self.VECTOR_SIZE)
         v = v_p.contents
 
@@ -48,8 +55,8 @@ class TestVectorMemory(unittest.TestCase):
 
         vector.free(v_p)
 
-    def test_alloc(self):
-        """Test vector allocation, initialisation, and freeing."""
+    def test_calloc(self):
+        """Test allocating, initialising and freeing vectors."""
         v_p = vector.alloc(self.VECTOR_SIZE, init=True)
         v = v_p.contents
 
@@ -61,3 +68,36 @@ class TestVectorMemory(unittest.TestCase):
             self.assertEqual(v.data[i], 0.0)
 
         vector.free(v_p)
+
+    def test_alloc_by_type(self):
+        """Test allocating and freeing vectors by type code."""
+        for typecode in typecodes:
+            itemtype, _, _ = typecodes[typecode]
+
+            v_p = vector.alloc(self.VECTOR_SIZE, typecode=typecode)
+            v = v_p.contents
+
+            self.assertEqual(v.size, self.VECTOR_SIZE)
+            self.assertIsInstance(v, Structure)
+
+            for i in range(self.VECTOR_SIZE):
+                self.assertIsInstance(v.data[i], itemtype)
+
+            vector.free(v_p, typecode=typecode)
+
+    def test_calloc_by_type(self):
+        """Test allocating, initialising and freeing vectors by type code."""
+        for typecode in typecodes:
+            itemtype, conversion, initval = typecodes[typecode]
+
+            v_p = vector.alloc(self.VECTOR_SIZE, typecode=typecode)
+            v = v_p.contents
+
+            self.assertEqual(v.size, self.VECTOR_SIZE)
+            self.assertIsInstance(v, Structure)
+
+            for i in range(self.VECTOR_SIZE):
+                self.assertIsInstance(v.data[i], itemtype)
+                self.assertEqual(conversion(v.data[i]), initval)
+
+            vector.free(v_p, typecode=typecode)
