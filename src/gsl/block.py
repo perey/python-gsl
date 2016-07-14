@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License
 # along with python-gsl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ['gsl_block_p', 'alloc', 'free']
+__all__ = ['alloc', 'free']
 
 # Standard library imports.
 from ctypes import Structure, c_double, c_size_t, POINTER
@@ -36,13 +36,13 @@ from .errors import exception_from_result
 NO_MEMORY = 8
 
 # Native struct definitions.
-class Block(Structure):
+class gsl_block(Structure):
     _fields_ = [('size', c_size_t),
                 ('data', POINTER(c_double))]
 
 gsl_block_p = POINTER(Block)
 
-class BlockComplex(Structure):
+class gsl_block_complex(Structure):
     _fields_ = [('size', c_size_t),
                 ('data', POINTER(gsl_complex))]
 

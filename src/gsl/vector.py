@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License
 # along with python-gsl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = []
+__all__ = ['alloc', 'free']
 
 # Standard library imports.
 from ctypes import Structure, c_double, c_int, c_size_t, POINTER
@@ -37,22 +37,23 @@ from .errors import exception_from_result
 NO_MEMORY = 8
 
 # Native struct definitions.
-class Vector(Structure):
+class gsl_vector(Structure):
     _fields_ = [('size', c_size_t),
                 ('stride', c_size_t),
                 ('data', POINTER(c_double)),
                 ('block', gsl_block_p),
                 ('owner', c_int)]
 
-gsl_vector_p = POINTER(Vector)
-class VectorComplex(Structure):
+gsl_vector_p = POINTER(gsl_vector)
+
+class gsl_vector_complex(Structure):
     _fields_ = [('size', c_size_t),
                 ('stride', c_size_t),
                 ('data', POINTER(gsl_complex)),
                 ('block', gsl_block_complex_p),
                 ('owner', c_int)]
 
-gsl_vector_complex_p = POINTER(VectorComplex)
+gsl_vector_complex_p = POINTER(gsl_vector_complex)
 
 # Native function declarations.
 native.gsl_vector_alloc.argtypes = (c_size_t,)
