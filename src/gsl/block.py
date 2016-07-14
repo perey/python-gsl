@@ -40,13 +40,13 @@ class gsl_block(Structure):
     _fields_ = [('size', c_size_t),
                 ('data', POINTER(c_double))]
 
-gsl_block_p = POINTER(Block)
+gsl_block_p = POINTER(gsl_block)
 
 class gsl_block_complex(Structure):
     _fields_ = [('size', c_size_t),
                 ('data', POINTER(gsl_complex))]
 
-gsl_block_complex_p = POINTER(BlockComplex)
+gsl_block_complex_p = POINTER(gsl_block_complex)
 
 # Native function declarations.
 native.gsl_block_alloc.argtypes = (c_size_t,)
