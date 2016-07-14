@@ -26,7 +26,7 @@
 __all__ = ['alloc', 'free']
 
 # Standard library imports.
-from ctypes import Structure, c_double, c_int, c_size_t, POINTER
+from ctypes import Structure, c_double, c_int, c_size_t, pointer, POINTER
 
 # Local imports.
 from . import native, gsl_complex
@@ -100,3 +100,19 @@ def free(vector_p, typecode='d'):
         raise ValueError('unknown type code {!r}'.format(typecode))
 
     free_fn(vector_p)
+
+c_double_p = POINTER(c_double)
+native.gsl_blas_ddot.argtypes = (gsl_vector_p, gsl_vector_p, c_double_p)
+native.gsl_blas_ddot.restype = c_int
+
+def dot(u, v):
+    """Calculate the scalar (dot) product of two vectors."""
+    # Construct and initialise a pointer to hold the result.
+    result = pointer(c_double(0.0))
+
+    # Call the function and check for errors.
+    errcode = native.gsl_blas_ddot(u, v, result)
+    if errcode:
+        raise exception_from_result(errcode)
+    else:
+        return result.contents.value

@@ -101,3 +101,22 @@ class TestVectorMemory(unittest.TestCase):
                 self.assertEqual(conversion(v.data[i]), initval)
 
             vector.free(v_p, typecode=typecode)
+
+
+class TestVectorOperations(unittest.TestCase):
+    """Test the vector operations in python-gsl."""
+    def setUp(self):
+        """Prepare two vectors for use in tests."""
+        self.u_p = vector.alloc(3, init=True)
+        self.u_p.contents.data[0] = 3.0
+        self.u_p.contents.data[1] = 0.0
+        self.u_p.contents.data[2] = -1.0
+
+        self.v_p = vector.alloc(3, init=True)
+        self.v_p.contents.data[0] = -1.0
+        self.v_p.contents.data[1] = 1.0
+        self.v_p.contents.data[2] = 0.5
+
+    def test_dot(self):
+        """Test the dot product of two real vectors."""
+        self.assertEqual(vector.dot(self.u_p, self.v_p), -3.5)
