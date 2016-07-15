@@ -27,6 +27,12 @@ __all__ = ['alloc', 'free']
 
 # Standard library imports.
 from ctypes import Structure, c_double, c_int, c_size_t, pointer, POINTER
+try:
+    # Python 3.3+
+    from collections.abc import Sequence
+except ImportError:
+    # Python 3.2 and earlier
+    from collections import Sequence
 
 # Local imports.
 from . import native, gsl_complex
@@ -116,3 +122,31 @@ def dot(u, v):
         raise exception_from_result(errcode)
     else:
         return result.contents.value
+
+# Pythonic class wrapping vector functionality.
+class Vector(Sequence):
+    """A vector, or one-dimensional matrix of scalar values."""
+    def __init__(self, size, typecode='d'):
+        # TODO: Accept an iterable, in place of the size argument, from which
+        # the vector will be both sized and initialised.
+        self._size = size
+        self._typecode = typecode
+        self._v_p = alloc(size, typecode=self._typecode, init=True)
+
+    def __del__(self):
+        free(self._v_p, self._typecode)
+
+    def __getitem__(self, index):
+        # FIXME: This is wrong! There is a native function gsl_vector_get that
+        # should be used for this.
+        return self._v_p.contents.data[index]
+
+    def __len__(self):
+        return self._size
+
+    def __matmul__(self, other):
+        """Use the matrix multiplication operator for the dot product."""
+        return self.dot(other)
+
+    def dot(self, other):
+        return dot(self, other)
