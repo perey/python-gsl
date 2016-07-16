@@ -24,7 +24,7 @@
 # along with python-gsl. If not, see <http://www.gnu.org/licenses/>.
 
 # Standard library imports.
-from ctypes import Structure
+from ctypes import ArgumentError
 import unittest
 
 # Library to be tested.
@@ -43,12 +43,28 @@ class TestVectorMemory(unittest.TestCase):
     VECTOR_SIZE = 10
     def test_init_signature(self):
         """Test that miscalling the constructor generates an error."""
-        # Does vector creation require exactly one positional argument?
+        # Does it require exactly one positional argument?
         with self.assertRaises(TypeError):
             v = vector.Vector()
 
         with self.assertRaises(TypeError):
             v = vector.Vector('Too many', 'arguments')
+
+        # Does it reject a positional argument that is neither a sized iterable
+        # nor a positive integer?
+        with self.assertRaises(ArgumentError):
+            v = vector.Vector(3.5)
+        with self.assertRaises(MemoryError):
+            # FIXME: This isn't really a MemoryError, but more detailed error
+            # messages aren't being passed from GSL to Python... yet.
+            v = vector.Vector(-1)
+        with self.assertRaises(ArgumentError):
+            # A generator may be iterable, but it lacks a len().
+            v = vector.Vector((x for x in range(4)))
+
+        # Does it reject an unknown typecode?
+        with self.assertRaises(ValueError):
+            v = vector.Vector(5, typecode='This is not a valid type code.')
 
     def test_init(self):
         """Test creation of a vector with default arguments."""
@@ -63,8 +79,6 @@ class TestVectorMemory(unittest.TestCase):
         for x in v:
             self.assertIsInstance(x, float)
             self.assertEqual(x, 0.0)
-
-        #FIXME: Iteration isn't working!!
 
     def test_init_by_type(self):
         """Test creation of a vector with a typecode."""
@@ -82,6 +96,21 @@ class TestVectorMemory(unittest.TestCase):
             for x in v:
                 self.assertIsInstance(x, itemtype)
                 self.assertEqual(x, zeroval)
+
+    def test_init_from_iterable(self):
+        """Test creation and initialisation of a vector."""
+        values = (-1.0, 3.0, 0.0)
+
+        # Can we create and initialise a vector of the default type (double)?
+        v = vector.Vector(values)
+
+        # Is it the right size?
+        self.assertEqual(len(v), len(values))
+
+        # Is it iterable, and are the elements the right type and value?
+        for expected, got in zip(v, values):
+            self.assertIsInstance(expected, float)
+            self.assertEqual(expected, got)
 
 
 class TestVectorOperations(unittest.TestCase):
