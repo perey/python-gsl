@@ -163,6 +163,13 @@ class Vector(Sequence):
         return self._v_p
 
     def __getitem__(self, index):
+        # FIXME: Bounds checking is not working, so I've done my own.
+        # How is GSL supposed to report an out-of-bounds error to me?
+        # (Crash-on-error is turned off, and turning it on still won't report
+        # the problem to Python). Hence, this never raises an IndexError, and
+        # the default __iter__ implementation for a Sequence never terminates.
+        if not (0 <= index < len(self)):
+            raise IndexError('index out of range')
         val = self._getter_fn(self._v_p, index)
 
         return complex(val) if self._typecode == 'C' else val

@@ -58,10 +58,11 @@ class TestVectorMemory(unittest.TestCase):
         # Is it the right size?
         self.assertEqual(len(v), self.VECTOR_SIZE)
 
-        # Are the elements the right type and initialised to zero?
-        for i in range(self.VECTOR_SIZE):
-            self.assertIsInstance(v[i], float)
-            self.assertEqual(v[i], 0.0)
+        # Is it iterable, and are the elements the right type and initialised
+        # to zero?
+        for x in v:
+            self.assertIsInstance(x, float)
+            self.assertEqual(x, 0.0)
 
         #FIXME: Iteration isn't working!!
 
@@ -76,10 +77,11 @@ class TestVectorMemory(unittest.TestCase):
             # Is it the right size?
             self.assertEqual(len(v), self.VECTOR_SIZE)
 
-            # Are the elements the right type and initialised to zero?
-            for i in range(self.VECTOR_SIZE):
-                self.assertIsInstance(v[i], itemtype)
-                self.assertEqual(v[i], zeroval)
+            # Is it iterable, and are the elements the right type and
+            # initialised to zero?
+            for x in v:
+                self.assertIsInstance(x, itemtype)
+                self.assertEqual(x, zeroval)
 
 
 class TestVectorOperations(unittest.TestCase):
