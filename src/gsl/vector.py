@@ -29,10 +29,13 @@ __all__ = ['alloc', 'free']
 from ctypes import Structure, c_double, c_int, c_size_t, pointer, POINTER
 try:
     # Python 3.3+
-    from collections.abc import Sequence
+    from collections.abc import Iterable, Sequence, Sized
 except ImportError:
     # Python 3.2 and earlier
-    from collections import Sequence
+    from collections import Iterable, Sequence, Sized
+
+# Third-party library imports (bundled with python-gsl).
+from . import finalize
 
 # Local imports.
 from . import native, gsl_complex
@@ -61,7 +64,7 @@ class gsl_vector_complex(Structure):
 
 gsl_vector_complex_p = POINTER(gsl_vector_complex)
 
-# Native function declarations.
+# Native memory-allocation function declarations.
 native.gsl_vector_alloc.argtypes = (c_size_t,)
 native.gsl_vector_alloc.restype = gsl_vector_p
 
@@ -94,6 +97,7 @@ def alloc(size, typecode='d', init=False):
         return vector_p
 
 
+# Native memory-deallocation function declarations.
 native.gsl_vector_free.argtypes = (gsl_vector_p,)
 native.gsl_vector_complex_free.argtypes = (gsl_vector_complex_p,)
 
@@ -107,6 +111,17 @@ def free(vector_p, typecode='d'):
 
     free_fn(vector_p)
 
+# Native element-access function declarations.
+native.gsl_vector_get.argtypes = (gsl_vector_p, c_size_t)
+native.gsl_vector_get.restype = c_double
+native.gsl_vector_complex_get.argtypes = (gsl_vector_complex_p, c_size_t)
+native.gsl_vector_complex_get.restype = gsl_complex
+
+native.gsl_vector_set.argtypes = (gsl_vector_p, c_size_t, c_double)
+native.gsl_vector_complex_set.argtypes = (gsl_vector_complex_p, c_size_t,
+                                          gsl_complex)
+
+# Native vector-operation function declarations.
 c_double_p = POINTER(c_double)
 native.gsl_blas_ddot.argtypes = (gsl_vector_p, gsl_vector_p, c_double_p)
 native.gsl_blas_ddot.restype = c_int
@@ -126,20 +141,69 @@ def dot(u, v):
 # Pythonic class wrapping vector functionality.
 class Vector(Sequence):
     """A vector, or one-dimensional matrix of scalar values."""
-    def __init__(self, size, typecode='d'):
-        # TODO: Accept an iterable, in place of the size argument, from which
-        # the vector will be both sized and initialised.
-        self._size = size
-        self._typecode = typecode
-        self._v_p = alloc(size, typecode=self._typecode, init=True)
+    def __init__(self, *args, typecode='d'):
+        """Construct a new vector.
 
-    def __del__(self):
-        free(self._v_p, self._typecode)
+        Positional arguments:
+            One positional argument is required. If this is an iterable
+            object that has a length, the vector is initialised from its
+            length and elements. Otherwise, it must be a positive
+            integer giving the length of the new vector.
+
+        Keyword arguments:
+            typecode -- 'd' (the default) for a vector of real numbers
+                (actually double-precision floating point), or 'C' for a
+                vector of complex numbers (using double-precision
+                floating point for the real and imaginary parts).
+
+        """
+        self._typecode = typecode
+
+        if len(args) != 1:
+            raise TypeError('__init__() takes exactly 1 argument ({} '
+                            'given)'.format(len(args)))
+
+        size_or_iterable = args[0]
+
+        if (isinstance(size_or_iterable, Iterable) and
+            isinstance(size_or_iterable, Sized)):
+            self._size = len(size_or_iterable)
+            self._v_p = alloc(self._size, typecode=self._typecode, init=False)
+
+            for i in range(self._size):
+                self[i] = size_or_iterable[i]
+        else:
+            self._size = size_or_iterable
+            self._v_p = alloc(self._size, typecode=self._typecode, init=True)
+
+        finalize.track_for_finalization(self, self._v_p,
+                                        lambda _v_p: free(_v_p, typecode))
+
+    @property
+    def _as_parameter_(self):
+        return self._v_p
 
     def __getitem__(self, index):
-        # FIXME: This is wrong! There is a native function gsl_vector_get that
-        # should be used for this.
-        return self._v_p.contents.data[index]
+        getter_fn = {'d': native.gsl_vector_get,
+                     'C': native.gsl_vector_complex_get
+                     }[self._typecode] # Don't bother with get; if someone has
+                                       # tinkered with the typecode, they can
+        val = getter_fn(self._v_p,     # suck it up and deal with the KeyError
+                        index)         # that they brought on themselves.
+
+        if self._typecode == 'C':
+            return complex(val)
+        else:
+            return val
+
+    def __setitem__(self, index, val):
+        setter_fn = {'d': native.gsl_vector_set,
+                     'C': native.gsl_vector_complex_set
+                     }[self._typecode] # Don't bother with get (see __getitem__
+                                       # for the rationale).
+        if self._typecode == 'C':
+            val = gsl_complex.from_complex(val)
+        setter_fn(self._v_p, index, val)
 
     def __len__(self):
         return self._size

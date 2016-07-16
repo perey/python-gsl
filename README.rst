@@ -14,3 +14,8 @@ Python-gsl is free software, released under the `GNU GPLv3`_. See the file
 ``COPYING`` and individual source files for the full license terms.
 
 .. _`GNU GPLv3`: https://www.gnu.org/licenses/gpl
+
+Python-gsl incorporates the ``finalize`` module by Benjamin Peterson, which
+is licensed under the `MIT license`_.
+
+.. _`MIT license`: https://opensource.org/licenses/MIT

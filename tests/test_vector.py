@@ -120,3 +120,35 @@ class TestVectorOperations(unittest.TestCase):
     def test_dot(self):
         """Test the dot product of two real vectors."""
         self.assertEqual(vector.dot(self.u_p, self.v_p), -3.5)
+        self.assertEqual(vector.dot(self.v_p, self.u_p), -3.5)
+        self.assertEqual(vector.dot(self.u_p, self.u_p), 10.0)
+        self.assertEqual(vector.dot(self.v_p, self.v_p), 2.25)
+
+
+class TestVectorClass(unittest.TestCase):
+    """Test vector operations using the Python class provided."""
+    def test_init(self):
+        """Test creation of a vector."""
+        # Does vector creation require exactly one positional argument?
+        with self.assertRaises(TypeError):
+            v = vector.Vector()
+
+        # Can we create a vector of doubles?
+        v = vector.Vector(5)
+
+    def test_dot(self):
+        """Test the dot product of two vectors."""
+        u = vector.Vector((3.0, 0.0, -1.0))
+        v = vector.Vector((-1.0, 1.0, 0.5))
+
+        # Does it work using the dot() method?
+        self.assertEqual(u.dot(v), -3.5)
+        self.assertEqual(v.dot(u), -3.5)
+        self.assertEqual(u.dot(u), 10.0)
+        self.assertEqual(v.dot(v), 2.25)
+
+        # Does it work using the @ operator?
+        self.assertEqual(u @ v, -3.5)
+        self.assertEqual(v @ u, -3.5)
+        self.assertEqual(u @ u, 10.0)
+        self.assertEqual(v @ v, 2.25)

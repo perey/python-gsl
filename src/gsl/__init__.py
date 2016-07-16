@@ -24,7 +24,8 @@
 # along with python-gsl. If not, see <http://www.gnu.org/licenses/>.
 
 __all__ = ['native', 'gsl_complex', 'gsl_mode_t', 'Mode',
-           'block', 'vector', 'errors', 'sf']
+           'block', 'vector', 'errors', 'sf',
+           'finalize']
 
 # Standard library imports.
 from enum import IntEnum
