@@ -34,121 +34,71 @@ from gsl import vector
 from gsl import gsl_complex
 
 # Data types supported.
-typecodes = {'d': (float, float, 0.0),
-             'C': (gsl_complex, complex, 0+0j)}
+typecodes = {'d': (float, 0.0),
+             'C': (complex, 0+0j)}
 
 # Test cases.
 class TestVectorMemory(unittest.TestCase):
     """Test the low-level vector memory functions in python-gsl."""
     VECTOR_SIZE = 10
-
-    def test_alloc(self):
-        """Test allocating and freeing vectors."""
-        v_p = vector.alloc(self.VECTOR_SIZE)
-        v = v_p.contents
-
-        self.assertEqual(v.size, self.VECTOR_SIZE)
-        self.assertIsInstance(v, Structure)
-
-        for i in range(self.VECTOR_SIZE):
-            self.assertIsInstance(v.data[i], float)
-
-        vector.free(v_p)
-
-    def test_calloc(self):
-        """Test allocating, initialising and freeing vectors."""
-        v_p = vector.alloc(self.VECTOR_SIZE, init=True)
-        v = v_p.contents
-
-        self.assertEqual(v.size, self.VECTOR_SIZE)
-        self.assertIsInstance(v, Structure)
-
-        for i in range(self.VECTOR_SIZE):
-            self.assertIsInstance(v.data[i], float)
-            self.assertEqual(v.data[i], 0.0)
-
-        vector.free(v_p)
-
-    def test_alloc_by_type(self):
-        """Test allocating and freeing vectors by type code."""
-        for typecode in typecodes:
-            itemtype, _, _ = typecodes[typecode]
-
-            v_p = vector.alloc(self.VECTOR_SIZE, typecode=typecode)
-            v = v_p.contents
-
-            self.assertEqual(v.size, self.VECTOR_SIZE)
-            self.assertIsInstance(v, Structure)
-
-            for i in range(self.VECTOR_SIZE):
-                self.assertIsInstance(v.data[i], itemtype)
-
-            vector.free(v_p, typecode=typecode)
-
-    def test_calloc_by_type(self):
-        """Test allocating, initialising and freeing vectors by type code."""
-        for typecode in typecodes:
-            itemtype, conversion, initval = typecodes[typecode]
-
-            v_p = vector.alloc(self.VECTOR_SIZE, typecode=typecode)
-            v = v_p.contents
-
-            self.assertEqual(v.size, self.VECTOR_SIZE)
-            self.assertIsInstance(v, Structure)
-
-            for i in range(self.VECTOR_SIZE):
-                self.assertIsInstance(v.data[i], itemtype)
-                self.assertEqual(conversion(v.data[i]), initval)
-
-            vector.free(v_p, typecode=typecode)
-
-
-class TestVectorOperations(unittest.TestCase):
-    """Test the vector operations in python-gsl."""
-    def setUp(self):
-        """Prepare two vectors for use in tests."""
-        self.u_p = vector.alloc(3, init=True)
-        self.u_p.contents.data[0] = 3.0
-        self.u_p.contents.data[1] = 0.0
-        self.u_p.contents.data[2] = -1.0
-
-        self.v_p = vector.alloc(3, init=True)
-        self.v_p.contents.data[0] = -1.0
-        self.v_p.contents.data[1] = 1.0
-        self.v_p.contents.data[2] = 0.5
-
-    def test_dot(self):
-        """Test the dot product of two real vectors."""
-        self.assertEqual(vector.dot(self.u_p, self.v_p), -3.5)
-        self.assertEqual(vector.dot(self.v_p, self.u_p), -3.5)
-        self.assertEqual(vector.dot(self.u_p, self.u_p), 10.0)
-        self.assertEqual(vector.dot(self.v_p, self.v_p), 2.25)
-
-
-class TestVectorClass(unittest.TestCase):
-    """Test vector operations using the Python class provided."""
-    def test_init(self):
-        """Test creation of a vector."""
+    def test_init_signature(self):
+        """Test that miscalling the constructor generates an error."""
         # Does vector creation require exactly one positional argument?
         with self.assertRaises(TypeError):
             v = vector.Vector()
 
-        # Can we create a vector of doubles?
-        v = vector.Vector(5)
+        with self.assertRaises(TypeError):
+            v = vector.Vector('Too many', 'arguments')
+
+    def test_init(self):
+        """Test creation of a vector with default arguments."""
+        # Can we create a vector of the default type (double)?
+        v = vector.Vector(self.VECTOR_SIZE)
+
+        # Is it the right size?
+        self.assertEqual(len(v), self.VECTOR_SIZE)
+
+        # Are the elements the right type and initialised to zero?
+        for i in range(self.VECTOR_SIZE):
+            self.assertIsInstance(v[i], float)
+            self.assertEqual(v[i], 0.0)
+
+        #FIXME: Iteration isn't working!!
+
+    def test_init_by_type(self):
+        """Test creation of a vector with a typecode."""
+        for typecode in typecodes:
+            itemtype, zeroval = typecodes[typecode]
+
+            # Can we create a vector of this type?
+            v = vector.Vector(self.VECTOR_SIZE, typecode=typecode)
+
+            # Is it the right size?
+            self.assertEqual(len(v), self.VECTOR_SIZE)
+
+            # Are the elements the right type and initialised to zero?
+            for i in range(self.VECTOR_SIZE):
+                self.assertIsInstance(v[i], itemtype)
+                self.assertEqual(v[i], zeroval)
+
+
+class TestVectorOperations(unittest.TestCase):
+    """Test vector operations using the Python class provided."""
+    def setUp(self):
+        """Prepare two vectors for use in tests."""
+        self.u = vector.Vector((3.0, 0.0, -1.0))
+        self.v = vector.Vector((-1.0, 1.0, 0.5))
 
     def test_dot(self):
         """Test the dot product of two vectors."""
-        u = vector.Vector((3.0, 0.0, -1.0))
-        v = vector.Vector((-1.0, 1.0, 0.5))
-
         # Does it work using the dot() method?
-        self.assertEqual(u.dot(v), -3.5)
-        self.assertEqual(v.dot(u), -3.5)
-        self.assertEqual(u.dot(u), 10.0)
-        self.assertEqual(v.dot(v), 2.25)
+        self.assertEqual(self.u.dot(self.v), -3.5)
+        self.assertEqual(self.v.dot(self.u), -3.5)
+        self.assertEqual(self.u.dot(self.u), 10.0)
+        self.assertEqual(self.v.dot(self.v), 2.25)
 
         # Does it work using the @ operator?
-        self.assertEqual(u @ v, -3.5)
-        self.assertEqual(v @ u, -3.5)
-        self.assertEqual(u @ u, 10.0)
-        self.assertEqual(v @ v, 2.25)
+        self.assertEqual(self.u @ self.v, -3.5)
+        self.assertEqual(self.v @ self.u, -3.5)
+        self.assertEqual(self.u @ self.u, 10.0)
+        self.assertEqual(self.v @ self.v, 2.25)

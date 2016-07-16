@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License
 # along with python-gsl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ['alloc', 'free']
+__all__ = ['Vector']
 
 # Standard library imports.
 from ctypes import Structure, c_double, c_int, c_size_t, pointer, POINTER
@@ -77,39 +77,9 @@ native.gsl_vector_complex_alloc.restype = gsl_vector_complex_p
 native.gsl_vector_complex_calloc.argtypes = (c_size_t,)
 native.gsl_vector_complex_calloc.restype = gsl_vector_complex_p
 
-def alloc(size, typecode='d', init=False):
-    """Allocate a vector in a new memory block."""
-    # Use calloc to initialise the new block, or alloc otherwise.
-    alloc_fns = {'d': (native.gsl_vector_alloc, native.gsl_vector_calloc),
-                 'C': (native.gsl_vector_complex_alloc,
-                       native.gsl_vector_complex_calloc)
-                 }.get(typecode)
-    if alloc_fns is None:
-        raise ValueError('unknown type code {!r}'.format(typecode))
-
-    fn_without_init, fn_with_init = alloc_fns
-
-    vector_p = (fn_with_init if init else fn_without_init)(size)
-    if not vector_p:
-        # Null pointer returned; insufficient memory is available.
-        raise exception_from_result(NO_MEMORY)
-    else:
-        return vector_p
-
-
 # Native memory-deallocation function declarations.
 native.gsl_vector_free.argtypes = (gsl_vector_p,)
 native.gsl_vector_complex_free.argtypes = (gsl_vector_complex_p,)
-
-def free(vector_p, typecode='d'):
-    """Free the memory allocated to a vector."""
-    free_fn = {'d': native.gsl_vector_free,
-                'C': native.gsl_vector_complex_free
-                }.get(typecode)
-    if free_fn is None:
-        raise ValueError('unknown type code {!r}'.format(typecode))
-
-    free_fn(vector_p)
 
 # Native element-access function declarations.
 native.gsl_vector_get.argtypes = (gsl_vector_p, c_size_t)
@@ -125,18 +95,6 @@ native.gsl_vector_complex_set.argtypes = (gsl_vector_complex_p, c_size_t,
 c_double_p = POINTER(c_double)
 native.gsl_blas_ddot.argtypes = (gsl_vector_p, gsl_vector_p, c_double_p)
 native.gsl_blas_ddot.restype = c_int
-
-def dot(u, v):
-    """Calculate the scalar (dot) product of two vectors."""
-    # Construct and initialise a pointer to hold the result.
-    result = pointer(c_double(0.0))
-
-    # Call the function and check for errors.
-    errcode = native.gsl_blas_ddot(u, v, result)
-    if errcode:
-        raise exception_from_result(errcode)
-    else:
-        return result.contents.value
 
 # Pythonic class wrapping vector functionality.
 class Vector(Sequence):
@@ -157,60 +115,89 @@ class Vector(Sequence):
                 floating point for the real and imaginary parts).
 
         """
-        self._typecode = typecode
-
         if len(args) != 1:
             raise TypeError('__init__() takes exactly 1 argument ({} '
                             'given)'.format(len(args)))
+
+        # Use the typecode argument to pick the appropriate native functions.
+        native_fns = {'d': (native.gsl_vector_alloc,
+                            native.gsl_vector_calloc,
+                            native.gsl_vector_free,
+                            native.gsl_vector_get,
+                            native.gsl_vector_set),
+                      'C': (native.gsl_vector_complex_alloc,
+                            native.gsl_vector_complex_calloc,
+                            native.gsl_vector_complex_free,
+                            native.gsl_vector_complex_get,
+                            native.gsl_vector_complex_set)
+                           }.get(typecode)
+        if (native_fns is None):
+            raise ValueError('unknown type code {!r}'.format(typecode))
+
+        (self._alloc_fn, self._calloc_fn, self._free_fn, self._getter_fn,
+         self._setter_fn) = native_fns
+
+        # Remember the typecode for later, so we know whether we need to call
+        # other functions before or after native calls (which is needed when
+        # it's a complex type, to convert Python complex to/from gsl_complex).
+        self._typecode = typecode
 
         size_or_iterable = args[0]
 
         if (isinstance(size_or_iterable, Iterable) and
             isinstance(size_or_iterable, Sized)):
-            self._size = len(size_or_iterable)
-            self._v_p = alloc(self._size, typecode=self._typecode, init=False)
+            # Don't bother initialising the block, because we're just going to
+            # overwrite it in a moment anyway.
+            size = len(size_or_iterable)
+            self._alloc(size, init=False)
 
-            for i in range(self._size):
+            for i in range(size):
                 self[i] = size_or_iterable[i]
         else:
-            self._size = size_or_iterable
-            self._v_p = alloc(self._size, typecode=self._typecode, init=True)
+            self._alloc(size_or_iterable, init=True)
 
-        finalize.track_for_finalization(self, self._v_p,
-                                        lambda _v_p: free(_v_p, typecode))
+        finalize.track_for_finalization(self, self._v_p, self._free_fn)
 
     @property
     def _as_parameter_(self):
         return self._v_p
 
     def __getitem__(self, index):
-        getter_fn = {'d': native.gsl_vector_get,
-                     'C': native.gsl_vector_complex_get
-                     }[self._typecode] # Don't bother with get; if someone has
-                                       # tinkered with the typecode, they can
-        val = getter_fn(self._v_p,     # suck it up and deal with the KeyError
-                        index)         # that they brought on themselves.
+        val = self._getter_fn(self._v_p, index)
 
-        if self._typecode == 'C':
-            return complex(val)
-        else:
-            return val
+        return complex(val) if self._typecode == 'C' else val
 
     def __setitem__(self, index, val):
-        setter_fn = {'d': native.gsl_vector_set,
-                     'C': native.gsl_vector_complex_set
-                     }[self._typecode] # Don't bother with get (see __getitem__
-                                       # for the rationale).
         if self._typecode == 'C':
             val = gsl_complex.from_complex(val)
-        setter_fn(self._v_p, index, val)
+        self._setter_fn(self._v_p, index, val)
 
     def __len__(self):
-        return self._size
+        return self._v_p.contents.size
 
     def __matmul__(self, other):
         """Use the matrix multiplication operator for the dot product."""
         return self.dot(other)
 
+    def _alloc(self, size, init):
+        """Allocate a new memory block for this vector."""
+        # Use calloc if we need to initialise the new block, alloc otherwise.
+        vector_p = (self._calloc_fn if init else self._alloc_fn)(size)
+        if not vector_p:
+            # Null pointer returned; insufficient memory is available.
+            raise exception_from_result(NO_MEMORY)
+        else:
+            self._v_p = vector_p
+
     def dot(self, other):
-        return dot(self, other)
+        """Calculate the scalar (dot) product of two vectors."""
+        # Construct and initialise a pointer to hold the result.
+        result = pointer(c_double(0.0))
+
+        # Call the function and check for errors.
+        # TODO: Complex-type and mixed-type dot products.
+        errcode = native.gsl_blas_ddot(self._v_p, other, result)
+        if errcode:
+            raise exception_from_result(errcode)
+        else:
+            return result.contents.value
