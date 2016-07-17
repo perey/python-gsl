@@ -115,11 +115,16 @@ class TestVectorOperations(unittest.TestCase):
     """Test vector operations using the Python class provided."""
     def setUp(self):
         """Prepare two vectors for use in tests."""
+        # Two real-valued vectors...
         self.u = vector.Vector((3.0, 0.0, -1.0))
         self.v = vector.Vector((-1.0, 1.0, 0.5))
 
-    def test_dot(self):
-        """Test the dot product of two vectors."""
+        # ...and two complex-valued vectors.
+        self.w = vector.Vector((2+1j, -2+1j, 1-2j), typecode='C')
+        self.x = vector.Vector((0-1j, -1+0j, 0+0j), typecode='C')
+
+    def test_dot_real(self):
+        """Test the dot product of two real vectors."""
         # Does it work using the dot() method?
         self.assertEqual(self.u.dot(self.v), -3.5)
         self.assertEqual(self.v.dot(self.u), -3.5)
@@ -131,6 +136,20 @@ class TestVectorOperations(unittest.TestCase):
         self.assertEqual(self.v @ self.u, -3.5)
         self.assertEqual(self.u @ self.u, 10.0)
         self.assertEqual(self.v @ self.v, 2.25)
+
+    def test_dot_complex(self):
+        """Test the dot product of two complex vectors."""
+        # Does it work using the dot() method?
+        self.assertEqual(self.w.dot(self.x), 3-3j)
+        self.assertEqual(self.x.dot(self.w), 3-3j)
+        self.assertEqual(self.w.dot(self.w), 3-4j)
+        self.assertEqual(self.x.dot(self.x), 0+0j)
+
+        # Does it work using the @ operator?
+        self.assertEqual(self.w @ self.x, 3-3j)
+        self.assertEqual(self.x @ self.w, 3-3j)
+        self.assertEqual(self.w @ self.w, 3-4j)
+        self.assertEqual(self.x @ self.x, 0+0j)
 
     def test_abs(self):
         """Test the absolute value (Euclidean norm) of a vector."""

@@ -45,11 +45,14 @@ from .errors import exception_from_result
 # GSL_ENOMEM error code.
 NO_MEMORY = 8
 
-# Native struct definitions.
+# Native type and struct definitions.
+c_double_p = POINTER(c_double)
+gsl_complex_p = POINTER(gsl_complex)
+
 class gsl_vector(Structure):
     _fields_ = [('size', c_size_t),
                 ('stride', c_size_t),
-                ('data', POINTER(c_double)),
+                ('data', c_double_p),
                 ('block', gsl_block_p),
                 ('owner', c_int)]
 
@@ -58,7 +61,7 @@ gsl_vector_p = POINTER(gsl_vector)
 class gsl_vector_complex(Structure):
     _fields_ = [('size', c_size_t),
                 ('stride', c_size_t),
-                ('data', POINTER(gsl_complex)),
+                ('data', gsl_complex_p),
                 ('block', gsl_block_complex_p),
                 ('owner', c_int)]
 
@@ -92,9 +95,11 @@ native.gsl_vector_complex_set.argtypes = (gsl_vector_complex_p, c_size_t,
                                           gsl_complex)
 
 # Native vector-operation function declarations.
-c_double_p = POINTER(c_double)
 native.gsl_blas_ddot.argtypes = (gsl_vector_p, gsl_vector_p, c_double_p)
 native.gsl_blas_ddot.restype = c_int
+native.gsl_blas_zdotu.argtypes = (gsl_vector_complex_p, gsl_vector_complex_p,
+                                  gsl_complex_p)
+native.gsl_blas_zdotu.restype = c_int
 
 native.gsl_blas_dnrm2.argtypes = (gsl_vector_p,)
 native.gsl_blas_dnrm2.restype = c_double
@@ -130,19 +135,21 @@ class Vector(Sequence):
                             native.gsl_vector_free,
                             native.gsl_vector_get,
                             native.gsl_vector_set,
+                            native.gsl_blas_ddot,
                             native.gsl_blas_dnrm2),
                       'C': (native.gsl_vector_complex_alloc,
                             native.gsl_vector_complex_calloc,
                             native.gsl_vector_complex_free,
                             native.gsl_vector_complex_get,
                             native.gsl_vector_complex_set,
+                            native.gsl_blas_zdotu,
                             native.gsl_blas_dznrm2)
                            }.get(typecode)
         if (native_fns is None):
             raise ValueError('unknown type code {!r}'.format(typecode))
 
         (self._alloc_fn, self._calloc_fn, self._free_fn, self._getter_fn,
-         self._setter_fn, self._norm_fn) = native_fns
+         self._setter_fn, self._dot_fn, self._norm_fn) = native_fns
 
         # Remember the typecode for later, so we know whether we need to call
         # other functions before or after native calls (which is needed when
@@ -210,12 +217,15 @@ class Vector(Sequence):
     def dot(self, other):
         """Calculate the scalar (dot) product of two vectors."""
         # Construct and initialise a pointer to hold the result.
-        result = pointer(c_double(0.0))
+        result = pointer(gsl_complex.from_complex(0+0j)
+                         if self._typecode == 'C' else
+                         c_double(0.0))
 
         # Call the function and check for errors.
-        # TODO: Complex-type and mixed-type dot products.
-        errcode = native.gsl_blas_ddot(self._v_p, other, result)
+        # TODO: Mixed-type dot products.
+        errcode = self._dot_fn(self._v_p, other, result)
         if errcode:
             raise exception_from_result(errcode)
         else:
-            return result.contents.value
+            return (complex(result.contents) if self._typecode == 'C' else
+                    result.contents.value)
