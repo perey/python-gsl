@@ -96,6 +96,11 @@ c_double_p = POINTER(c_double)
 native.gsl_blas_ddot.argtypes = (gsl_vector_p, gsl_vector_p, c_double_p)
 native.gsl_blas_ddot.restype = c_int
 
+native.gsl_blas_dnrm2.argtypes = (gsl_vector_p,)
+native.gsl_blas_dnrm2.restype = c_double
+native.gsl_blas_dznrm2.argtypes = (gsl_vector_complex_p,)
+native.gsl_blas_dznrm2.restype = c_double
+
 # Pythonic class wrapping vector functionality.
 class Vector(Sequence):
     """A vector, or one-dimensional matrix of scalar values."""
@@ -124,18 +129,20 @@ class Vector(Sequence):
                             native.gsl_vector_calloc,
                             native.gsl_vector_free,
                             native.gsl_vector_get,
-                            native.gsl_vector_set),
+                            native.gsl_vector_set,
+                            native.gsl_blas_dnrm2),
                       'C': (native.gsl_vector_complex_alloc,
                             native.gsl_vector_complex_calloc,
                             native.gsl_vector_complex_free,
                             native.gsl_vector_complex_get,
-                            native.gsl_vector_complex_set)
+                            native.gsl_vector_complex_set,
+                            native.gsl_blas_dznrm2)
                            }.get(typecode)
         if (native_fns is None):
             raise ValueError('unknown type code {!r}'.format(typecode))
 
         (self._alloc_fn, self._calloc_fn, self._free_fn, self._getter_fn,
-         self._setter_fn) = native_fns
+         self._setter_fn, self._norm_fn) = native_fns
 
         # Remember the typecode for later, so we know whether we need to call
         # other functions before or after native calls (which is needed when
@@ -181,6 +188,10 @@ class Vector(Sequence):
 
     def __len__(self):
         return self._v_p.contents.size
+
+    def __abs__(self):
+        """Find the Euclidean norm of this vector."""
+        return self._norm_fn(self._v_p)
 
     def __matmul__(self, other):
         """Use the matrix multiplication operator for the dot product."""

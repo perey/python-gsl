@@ -25,13 +25,11 @@
 
 # Standard library imports.
 from ctypes import ArgumentError
+from math import sqrt
 import unittest
 
 # Library to be tested.
 from gsl import vector
-
-# Test dependency.
-from gsl import gsl_complex
 
 # Data types supported.
 typecodes = {'d': (float, 0.0),
@@ -133,3 +131,8 @@ class TestVectorOperations(unittest.TestCase):
         self.assertEqual(self.v @ self.u, -3.5)
         self.assertEqual(self.u @ self.u, 10.0)
         self.assertEqual(self.v @ self.v, 2.25)
+
+    def test_abs(self):
+        """Test the absolute value (Euclidean norm) of a vector."""
+        self.assertAlmostEqual(abs(self.u), sqrt(10))
+        self.assertAlmostEqual(abs(self.v), sqrt(2.25))
