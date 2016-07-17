@@ -155,3 +155,5 @@ class TestVectorOperations(unittest.TestCase):
         """Test the absolute value (Euclidean norm) of a vector."""
         self.assertAlmostEqual(abs(self.u), sqrt(10))
         self.assertAlmostEqual(abs(self.v), sqrt(2.25))
+        self.assertAlmostEqual(abs(self.w), sqrt(15))
+        self.assertAlmostEqual(abs(self.x), sqrt(2))
