@@ -106,8 +106,8 @@ class TestVectorMemory(unittest.TestCase):
         self.assertEqual(len(v), len(values))
 
         # Is it iterable, and are the elements the right type and value?
-        for expected, got in zip(v, values):
-            self.assertIsInstance(expected, float)
+        for expected, got in zip(values, v):
+            self.assertIsInstance(got, float)
             self.assertEqual(expected, got)
 
 
@@ -122,6 +122,16 @@ class TestVectorOperations(unittest.TestCase):
         # ...and two complex-valued vectors.
         self.w = vector.Vector((2+1j, -2+1j, 1-2j), typecode='C')
         self.x = vector.Vector((0-1j, -1+0j, 0+0j), typecode='C')
+
+        # Plus a differently-sized vector, for testing size constraints.
+        # TODO
+
+    def test_abs(self):
+        """Test the absolute value (Euclidean norm) of a vector."""
+        self.assertAlmostEqual(abs(self.u), sqrt(10))
+        self.assertAlmostEqual(abs(self.v), sqrt(2.25))
+        self.assertAlmostEqual(abs(self.w), sqrt(15))
+        self.assertAlmostEqual(abs(self.x), sqrt(2))
 
     def test_dot_real(self):
         """Test the dot product of two real vectors."""
@@ -151,9 +161,15 @@ class TestVectorOperations(unittest.TestCase):
         self.assertEqual(self.w @ self.w, 3-4j)
         self.assertEqual(self.x @ self.x, 0+0j)
 
-    def test_abs(self):
-        """Test the absolute value (Euclidean norm) of a vector."""
-        self.assertAlmostEqual(abs(self.u), sqrt(10))
-        self.assertAlmostEqual(abs(self.v), sqrt(2.25))
-        self.assertAlmostEqual(abs(self.w), sqrt(15))
-        self.assertAlmostEqual(abs(self.x), sqrt(2))
+    def test_iadd(self):
+        """Test in-place addition of one vector to another."""
+        self.u += self.v
+
+        # Did we avoid accidentally overwriting self.u with something that
+        # isn't a vector?
+        self.assertIsInstance(self.u, vector.Vector)
+
+        # Does it have the expected values?
+        expect = (2.0, 1.0, -0.5)
+        for expected, got in zip(expect, self.u):
+            self.assertEqual(expected, got)

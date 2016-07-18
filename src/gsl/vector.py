@@ -95,6 +95,12 @@ native.gsl_vector_complex_set.argtypes = (gsl_vector_complex_p, c_size_t,
                                           gsl_complex)
 
 # Native vector-operation function declarations.
+native.gsl_vector_add.argtypes = (gsl_vector_p, gsl_vector_p)
+native.gsl_vector_add.restype = c_int
+native.gsl_vector_complex_add.argtypes = (gsl_vector_complex_p,
+                                          gsl_vector_complex_p)
+native.gsl_vector_complex_add.restype = c_int
+
 native.gsl_blas_ddot.argtypes = (gsl_vector_p, gsl_vector_p, c_double_p)
 native.gsl_blas_ddot.restype = c_int
 native.gsl_blas_zdotu.argtypes = (gsl_vector_complex_p, gsl_vector_complex_p,
@@ -135,6 +141,7 @@ class Vector(Sequence):
                             native.gsl_vector_free,
                             native.gsl_vector_get,
                             native.gsl_vector_set,
+                            native.gsl_vector_add,
                             native.gsl_blas_ddot,
                             native.gsl_blas_dnrm2),
                       'C': (native.gsl_vector_complex_alloc,
@@ -142,6 +149,7 @@ class Vector(Sequence):
                             native.gsl_vector_complex_free,
                             native.gsl_vector_complex_get,
                             native.gsl_vector_complex_set,
+                            native.gsl_vector_complex_add,
                             native.gsl_blas_zdotu,
                             native.gsl_blas_dznrm2)
                            }.get(typecode)
@@ -149,7 +157,8 @@ class Vector(Sequence):
             raise ValueError('unknown type code {!r}'.format(typecode))
 
         (self._alloc_fn, self._calloc_fn, self._free_fn, self._getter_fn,
-         self._setter_fn, self._dot_fn, self._norm_fn) = native_fns
+         self._setter_fn, self._add_fn, self._dot_fn,
+         self._norm_fn) = native_fns
 
         # Remember the typecode for later, so we know whether we need to call
         # other functions before or after native calls (which is needed when
@@ -199,6 +208,18 @@ class Vector(Sequence):
     def __abs__(self):
         """Find the Euclidean norm of this vector."""
         return self._norm_fn(self._v_p)
+
+    def __iadd__(self, other):
+        """Add another vector to this one, in place."""
+        # Call the native function (which overwrites this vector by default),
+        # and check for errors.
+        # TODO: Support __add__ as well.
+        # TODO: Mixed-type vector sums.
+        errcode = self._add_fn(self._v_p, other)
+        if errcode:
+            raise exception_from_result(errcode)
+        else:
+            return self
 
     def __matmul__(self, other):
         """Use the matrix multiplication operator for the dot product."""
