@@ -24,6 +24,7 @@
 # along with python-gsl. If not, see <http://www.gnu.org/licenses/>.
 
 # Standard library imports.
+import copy
 from ctypes import ArgumentError
 from math import sqrt
 import unittest
@@ -132,6 +133,18 @@ class TestVectorOperations(unittest.TestCase):
         self.assertAlmostEqual(abs(self.v), sqrt(2.25))
         self.assertAlmostEqual(abs(self.w), sqrt(15))
         self.assertAlmostEqual(abs(self.x), sqrt(2))
+
+    def test_copy(self):
+        """Test shallow copying of a vector."""
+        u2 = copy.copy(self.u)
+        self.assertEqual(len(self.u), len(u2))
+        for original, copied in zip(self.u, u2):
+            self.assertEqual(original, copied)
+
+        w2 = copy.copy(self.w)
+        self.assertEqual(len(self.w), len(w2))
+        for original, copied in zip(self.w, w2):
+            self.assertEqual(original, copied)
 
     def test_dot_real(self):
         """Test the dot product of two real vectors."""

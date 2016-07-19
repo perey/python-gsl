@@ -94,6 +94,12 @@ native.gsl_vector_set.argtypes = (gsl_vector_p, c_size_t, c_double)
 native.gsl_vector_complex_set.argtypes = (gsl_vector_complex_p, c_size_t,
                                           gsl_complex)
 
+native.gsl_vector_memcpy.argtypes = (gsl_vector_p, gsl_vector_p)
+native.gsl_vector_memcpy.restype = c_int
+native.gsl_vector_complex_memcpy.argtypes = (gsl_vector_complex_p,
+                                             gsl_vector_complex_p)
+native.gsl_vector_complex_memcpy.restype = c_int
+
 # Native vector-operation function declarations.
 native.gsl_vector_add.argtypes = (gsl_vector_p, gsl_vector_p)
 native.gsl_vector_add.restype = c_int
@@ -141,6 +147,7 @@ class Vector(Sequence):
                             native.gsl_vector_free,
                             native.gsl_vector_get,
                             native.gsl_vector_set,
+                            native.gsl_vector_memcpy,
                             native.gsl_vector_add,
                             native.gsl_blas_ddot,
                             native.gsl_blas_dnrm2),
@@ -149,6 +156,7 @@ class Vector(Sequence):
                             native.gsl_vector_complex_free,
                             native.gsl_vector_complex_get,
                             native.gsl_vector_complex_set,
+                            native.gsl_vector_complex_memcpy,
                             native.gsl_vector_complex_add,
                             native.gsl_blas_zdotu,
                             native.gsl_blas_dznrm2)
@@ -157,7 +165,7 @@ class Vector(Sequence):
             raise ValueError('unknown type code {!r}'.format(typecode))
 
         (self._alloc_fn, self._calloc_fn, self._free_fn, self._getter_fn,
-         self._setter_fn, self._add_fn, self._dot_fn,
+         self._setter_fn, self._copy_fn, self._add_fn, self._dot_fn,
          self._norm_fn) = native_fns
 
         # Remember the typecode for later, so we know whether we need to call
@@ -204,6 +212,17 @@ class Vector(Sequence):
 
     def __len__(self):
         return self._v_p.contents.size
+
+    def __copy__(self):
+        """Create a shallow copy of this vector."""
+        other = self.__class__(len(self), typecode=self._typecode)
+
+        # Call the copy function and check for errors.
+        errcode = self._copy_fn(other, self._v_p)
+        if errcode:
+            raise exception_from_result(errcode)
+        else:
+            return other
 
     def __abs__(self):
         """Find the Euclidean norm of this vector."""
