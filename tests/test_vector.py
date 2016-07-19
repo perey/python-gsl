@@ -174,15 +174,37 @@ class TestVectorOperations(unittest.TestCase):
         self.assertEqual(self.w @ self.w, 3-4j)
         self.assertEqual(self.x @ self.x, 0+0j)
 
+    def test_add(self):
+        """Test addition of two vectors."""
+        vector_sum_real = self.u + self.v
+        vector_sum_complex = self.w + self.x
+
+        # Are the results of the right type?
+        self.assertIsInstance(vector_sum_real, vector.Vector)
+        self.assertIsInstance(vector_sum_complex, vector.Vector)
+
+        # Do they have the expected values?
+        expect_real = (2.0, 1.0, -0.5)
+        for expected, got in zip(expect_real, vector_sum_real):
+            self.assertEqual(expected, got)
+        expect_complex = (2+0j, -3+1j, 1-2j)
+        for expected, got in zip(expect_complex, vector_sum_complex):
+            self.assertEqual(expected, got)
+
     def test_iadd(self):
         """Test in-place addition of one vector to another."""
         self.u += self.v
+        self.w += self.x
 
-        # Did we avoid accidentally overwriting self.u with something that
-        # isn't a vector?
+        # Did we avoid accidentally overwriting the target vectors with
+        # something that isn't a vector?
         self.assertIsInstance(self.u, vector.Vector)
+        self.assertIsInstance(self.w, vector.Vector)
 
-        # Does it have the expected values?
-        expect = (2.0, 1.0, -0.5)
-        for expected, got in zip(expect, self.u):
+        # Do they have the expected values?
+        expect_u = (2.0, 1.0, -0.5)
+        for expected, got in zip(expect_u, self.u):
+            self.assertEqual(expected, got)
+        expect_w = (2+0j, -3+1j, 1-2j)
+        for expected, got in zip(expect_w, self.w):
             self.assertEqual(expected, got)

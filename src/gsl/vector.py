@@ -228,11 +228,21 @@ class Vector(Sequence):
         """Find the Euclidean norm of this vector."""
         return self._norm_fn(self._v_p)
 
+    def __add__(self, other):
+        """Find the sum of this vector with another."""
+        result = self.__copy__()
+        # Call the native function and check for errors.
+        # TODO: Mixed-type vector sums.
+        errcode = self._add_fn(result, other)
+        if errcode:
+            raise exception_from_result(errcode)
+        else:
+            return result
+
     def __iadd__(self, other):
         """Add another vector to this one, in place."""
         # Call the native function (which overwrites this vector by default),
         # and check for errors.
-        # TODO: Support __add__ as well.
         # TODO: Mixed-type vector sums.
         errcode = self._add_fn(self._v_p, other)
         if errcode:
