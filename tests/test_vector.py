@@ -178,10 +178,12 @@ class TestVectorOperations(unittest.TestCase):
         """Test addition of two vectors."""
         vector_sum_real = self.u + self.v
         vector_sum_complex = self.w + self.x
+        vector_sum_mixed = self.u + self.w
 
         # Are the results of the right type?
         self.assertIsInstance(vector_sum_real, vector.Vector)
         self.assertIsInstance(vector_sum_complex, vector.Vector)
+        self.assertIsInstance(vector_sum_mixed, vector.Vector)
 
         # Do they have the expected values?
         expect_real = (2.0, 1.0, -0.5)
@@ -190,21 +192,36 @@ class TestVectorOperations(unittest.TestCase):
         expect_complex = (2+0j, -3+1j, 1-2j)
         for expected, got in zip(expect_complex, vector_sum_complex):
             self.assertEqual(expected, got)
+        expect_mixed = (5+1j, -2+1j, 0-2j)
+        for expected, got in zip(expect_mixed, vector_sum_mixed):
+            self.assertEqual(expected, got)
 
     def test_iadd(self):
         """Test in-place addition of one vector to another."""
+        # Real
         self.u += self.v
+        # Complex
         self.w += self.x
+        # Mixed
+        self.v += self.x
 
         # Did we avoid accidentally overwriting the target vectors with
         # something that isn't a vector?
         self.assertIsInstance(self.u, vector.Vector)
         self.assertIsInstance(self.w, vector.Vector)
+        self.assertIsInstance(self.v, vector.Vector)
 
-        # Do they have the expected values?
+        # Has the result of the mixed-type addition been coerced to the correct
+        # typecode to hold the result?
+        self.assertEqual(self.v._typecode, 'C')
+
+        # Do the results have the expected values?
         expect_u = (2.0, 1.0, -0.5)
         for expected, got in zip(expect_u, self.u):
             self.assertEqual(expected, got)
         expect_w = (2+0j, -3+1j, 1-2j)
         for expected, got in zip(expect_w, self.w):
+            self.assertEqual(expected, got)
+        expect_v = (-1-1j, 0+0j, 0.5+0j)
+        for expected, got in zip(expect_v, self.v):
             self.assertEqual(expected, got)

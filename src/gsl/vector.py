@@ -26,7 +26,8 @@
 __all__ = ['Vector']
 
 # Standard library imports.
-from ctypes import Structure, c_double, c_int, c_size_t, pointer, POINTER
+from ctypes import (ArgumentError, Structure, c_double, c_int, c_size_t,
+                    pointer, POINTER)
 try:
     # Python 3.3+
     from collections.abc import Iterable, Sequence, Sized
@@ -193,6 +194,22 @@ class Vector(Sequence):
     def _as_parameter_(self):
         return self._v_p
 
+    def _as_typecode(self, typecode):
+        """Return a copy of this vector with a more general typecode.
+
+        Vectors of real values can always be coerced to complex vectors
+        with the same data type.
+
+        """
+        # Coercion rules: d coerces to C.
+        if typecode == 'C' and self._typecode == 'd':
+            coerced = Vector(len(self), typecode=typecode)
+            for i, val in enumerate(self):
+                coerced[i] = val
+            return coerced
+        else:
+            return self
+
     def __getitem__(self, index):
         # FIXME: Bounds checking is not working, so I've done my own.
         # How is GSL supposed to report an out-of-bounds error to me?
@@ -232,8 +249,14 @@ class Vector(Sequence):
         """Find the sum of this vector with another."""
         result = self.__copy__()
         # Call the native function and check for errors.
-        # TODO: Mixed-type vector sums.
-        errcode = self._add_fn(result, other)
+        try:
+            errcode = result._add_fn(result, other)
+        except ArgumentError:
+            # Coerce both vectors to the more general typecode.
+            result, other = (result._as_typecode(other._typecode),
+                             other._as_typecode(result._typecode))
+            errcode = result._add_fn(result, other)
+
         if errcode:
             raise exception_from_result(errcode)
         else:
@@ -243,8 +266,17 @@ class Vector(Sequence):
         """Add another vector to this one, in place."""
         # Call the native function (which overwrites this vector by default),
         # and check for errors.
-        # TODO: Mixed-type vector sums.
-        errcode = self._add_fn(self._v_p, other)
+        try:
+            errcode = self._add_fn(self._v_p, other)
+        except ArgumentError:
+            # Create a new Vector object to hold the result of the addition.
+            self = self.__copy__()
+            # Coerce both vectors to the more general typecode.
+            self, other = (self._as_typecode(other._typecode),
+                           other._as_typecode(self._typecode))
+            # Perform the addition.
+            errcode = self._add_fn(self, other)
+
         if errcode:
             raise exception_from_result(errcode)
         else:
