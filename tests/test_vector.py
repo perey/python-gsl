@@ -147,21 +147,22 @@ class TestVectorOperations(unittest.TestCase):
         for original, copied in zip(self.w, w2):
             self.assertEqual(original, copied)
 
-    def test_dot_real(self):
-        """Test the dot product of two real vectors."""
-        # Does it work using the dot() method?
+    def test_dot_method_real(self):
+        """Test the dot() method of two real vectors."""
         self.assertEqual(self.u.dot(self.v), -3.5)
         self.assertEqual(self.v.dot(self.u), -3.5)
         self.assertEqual(self.u.dot(self.u), 10.0)
         self.assertEqual(self.v.dot(self.v), 2.25)
 
-        # Does it work using the @ operator?
+    def test_dot_operator_real(self):
+        """Test the @ operator with two real vectors."""
         self.assertEqual(self.u @ self.v, -3.5)
         self.assertEqual(self.v @ self.u, -3.5)
         self.assertEqual(self.u @ self.u, 10.0)
         self.assertEqual(self.v @ self.v, 2.25)
 
-        # Does it fail when the vectors are of different sizes?
+    def test_dot_mismatch_real(self):
+        """Test the dot product of mixed-size real vectors."""
         with self.assertRaises(TypeError):
             self.u.dot(self.y)
         with self.assertRaises(TypeError):
@@ -171,21 +172,22 @@ class TestVectorOperations(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.y @ self.u
 
-    def test_dot_complex(self):
-        """Test the dot product of two complex vectors."""
-        # Does it work using the dot() method?
+    def test_dot_method_complex(self):
+        """Test the dot() method of two complex vectors."""
         self.assertEqual(self.w.dot(self.x), 3-3j)
         self.assertEqual(self.x.dot(self.w), 3-3j)
         self.assertEqual(self.w.dot(self.w), 3-4j)
         self.assertEqual(self.x.dot(self.x), 0+0j)
 
-        # Does it work using the @ operator?
+    def test_dot_operator_complex(self):
+        """Test the @ operator with two complex vectors."""
         self.assertEqual(self.w @ self.x, 3-3j)
         self.assertEqual(self.x @ self.w, 3-3j)
         self.assertEqual(self.w @ self.w, 3-4j)
         self.assertEqual(self.x @ self.x, 0+0j)
 
-        # Does it fail when the vectors are of different sizes?
+    def test_dot_mismatch_complex(self):
+        """Test the dot product of mixed-size complex vectors."""
         with self.assertRaises(TypeError):
             self.w.dot(self.z)
         with self.assertRaises(TypeError):
@@ -195,79 +197,119 @@ class TestVectorOperations(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.z @ self.w
 
-    def test_dot_mixed(self):
-        """Test the dot product of vectors of mixed types."""
-        # Does it work using the dot() method?
+    def test_dot_method_mixed(self):
+        """Test the dot() method of vectors of mixed types."""
         self.assertEqual(self.u.dot(self.w), 5+5j)
         self.assertEqual(self.w.dot(self.u), 5+5j)
         self.assertEqual(self.v.dot(self.x), -1+1j)
         self.assertEqual(self.x.dot(self.v), -1+1j)
 
-        # Does it work using the @ operator?
+    def test_dot_operator_mixed(self):
+        """Test the @ operator with vectors of mixed types."""
         self.assertEqual(self.u @ self.w, 5+5j)
         self.assertEqual(self.w @ self.u, 5+5j)
         self.assertEqual(self.v @ self.x, -1+1j)
         self.assertEqual(self.x @ self.v, -1+1j)
 
-    def test_add(self):
-        """Test addition of two vectors."""
-        vector_sum_real = self.u + self.v
-        vector_sum_complex = self.w + self.x
-        vector_sum_mixed = self.u + self.w
+    def test_dot_mismatch_mixed(self):
+        """Test the dot product of mixed-type, mixed-size vectors."""
+        with self.assertRaises(TypeError):
+            self.u.dot(self.z)
+        with self.assertRaises(TypeError):
+            self.w.dot(self.y)
+        with self.assertRaises(TypeError):
+            self.u @ self.z
+        with self.assertRaises(TypeError):
+            self.w @ self.y
 
-        # Are the results of the right type?
-        self.assertIsInstance(vector_sum_real, vector.Vector)
-        self.assertIsInstance(vector_sum_complex, vector.Vector)
-        self.assertIsInstance(vector_sum_mixed, vector.Vector)
+    def test_add_real(self):
+        """Test addition of two real vectors."""
+        vector_sum = self.u + self.v
 
-        # Do they have the expected values?
-        expect_real = (2.0, 1.0, -0.5)
-        for expected, got in zip(expect_real, vector_sum_real):
-            self.assertEqual(expected, got)
-        expect_complex = (2+0j, -3+1j, 1-2j)
-        for expected, got in zip(expect_complex, vector_sum_complex):
-            self.assertEqual(expected, got)
-        expect_mixed = (5+1j, -2+1j, 0-2j)
-        for expected, got in zip(expect_mixed, vector_sum_mixed):
+        # Is the result of the right type?
+        self.assertIsInstance(vector_sum, vector.Vector)
+
+        # Does it have the expected values?
+        expect = (2.0, 1.0, -0.5)
+        for expected, got in zip(expect, vector_sum):
             self.assertEqual(expected, got)
 
-        # Does addition fail when vectors are of different sizes?
+    def test_add_complex(self):
+        """Test addition of two complex vectors."""
+        vector_sum = self.w + self.x
+
+        # Is the result of the right type?
+        self.assertIsInstance(vector_sum, vector.Vector)
+
+        # Does it have the expected values?
+        expect = (2+0j, -3+1j, 1-2j)
+        for expected, got in zip(expect, vector_sum):
+            self.assertEqual(expected, got)
+
+    def test_add_mixed(self):
+        """Test addition of two vectors of mixed types."""
+        vector_sum = self.u + self.w
+
+        # Is the result of the right type?
+        self.assertIsInstance(vector_sum, vector.Vector)
+
+        # Does it have the expected values?
+        expect = (5+1j, -2+1j, 0-2j)
+        for expected, got in zip(expect, vector_sum):
+            self.assertEqual(expected, got)
+
+    def test_add_mismatch(self):
+        """Test addition of two mixed-size vectors."""
         with self.assertRaises(TypeError):
             self.u + self.y
         with self.assertRaises(TypeError):
             self.w + self.z
 
-    def test_iadd(self):
-        """Test in-place addition of one vector to another."""
-        # Real
+    def test_iadd_real(self):
+        """Test in-place addition of one real vector to another."""
         self.u += self.v
-        # Complex
+
+        # Did we avoid accidentally overwriting the vector with something that
+        # isn't a vector?
+        self.assertIsInstance(self.u, vector.Vector)
+
+        # Does it have the expected values?
+        expect = (2.0, 1.0, -0.5)
+        for expected, got in zip(expect, self.u):
+            self.assertEqual(expected, got)
+
+    def test_iadd_complex(self):
+        """Test in-place addition of one complex vector to another."""
         self.w += self.x
-        # Mixed
+
+        # Did we avoid accidentally overwriting the vector with something that
+        # isn't a vector?
+        self.assertIsInstance(self.w, vector.Vector)
+
+        # Does it have the expected values?
+        expect = (2+0j, -3+1j, 1-2j)
+        for expected, got in zip(expect, self.w):
+            self.assertEqual(expected, got)
+
+    def test_iadd_mixed(self):
+        """Test in-place addition with vectors of mixed types."""
         self.v += self.x
 
-        # Did we avoid accidentally overwriting the target vectors with
-        # something that isn't a vector?
-        self.assertIsInstance(self.u, vector.Vector)
-        self.assertIsInstance(self.w, vector.Vector)
+        # Did we avoid accidentally overwriting the vector with something that
+        # isn't a vector?
         self.assertIsInstance(self.v, vector.Vector)
 
-        # Has the result of the mixed-type addition been coerced to the correct
-        # typecode to hold the result?
+        # Has the result been coerced to the correct typecode to hold the
+        # result?
         self.assertEqual(self.v._typecode, 'C')
 
-        # Do the results have the expected values?
-        expect_u = (2.0, 1.0, -0.5)
-        for expected, got in zip(expect_u, self.u):
-            self.assertEqual(expected, got)
-        expect_w = (2+0j, -3+1j, 1-2j)
-        for expected, got in zip(expect_w, self.w):
-            self.assertEqual(expected, got)
-        expect_v = (-1-1j, 0+0j, 0.5+0j)
-        for expected, got in zip(expect_v, self.v):
+        # Does it have the expected values?
+        expect = (-1-1j, 0+0j, 0.5+0j)
+        for expected, got in zip(expect, self.v):
             self.assertEqual(expected, got)
 
-        # Does addition fail when vectors are of different sizes?
+    def test_iadd_mismatch(self):
+        """Test in-place addition with mixed-size vectors."""
         with self.assertRaises(TypeError):
             self.u += self.y
         with self.assertRaises(TypeError):
