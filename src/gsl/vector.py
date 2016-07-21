@@ -299,12 +299,15 @@ class Vector(Sequence):
     def dot(self, other):
         """Calculate the scalar (dot) product of two vectors."""
         # Construct and initialise a pointer to hold the result.
+        if self._typecode != other._typecode:
+            self, other = (self._as_typecode(other._typecode),
+                           other._as_typecode(self._typecode))
+
         result = pointer(gsl_complex.from_complex(0+0j)
                          if self._typecode == 'C' else
                          c_double(0.0))
 
         # Call the function and check for errors.
-        # TODO: Mixed-type dot products.
         errcode = self._dot_fn(self._v_p, other, result)
         if errcode:
             raise exception_from_result(errcode)

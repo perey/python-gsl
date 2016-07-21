@@ -174,6 +174,20 @@ class TestVectorOperations(unittest.TestCase):
         self.assertEqual(self.w @ self.w, 3-4j)
         self.assertEqual(self.x @ self.x, 0+0j)
 
+    def test_dot_mixed(self):
+        """Test the dot product of vectors of mixed types."""
+        # Does it work using the dot() method?
+        self.assertEqual(self.u.dot(self.w), 5+5j)
+        self.assertEqual(self.w.dot(self.u), 5+5j)
+        self.assertEqual(self.v.dot(self.x), -1+1j)
+        self.assertEqual(self.x.dot(self.v), -1+1j)
+
+        # Does it work using the @ operator?
+        self.assertEqual(self.u @ self.w, 5+5j)
+        self.assertEqual(self.w @ self.u, 5+5j)
+        self.assertEqual(self.v @ self.x, -1+1j)
+        self.assertEqual(self.x @ self.v, -1+1j)
+
     def test_add(self):
         """Test addition of two vectors."""
         vector_sum_real = self.u + self.v
