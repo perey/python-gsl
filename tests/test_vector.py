@@ -124,8 +124,9 @@ class TestVectorOperations(unittest.TestCase):
         self.w = vector.Vector((2+1j, -2+1j, 1-2j), typecode='C')
         self.x = vector.Vector((0-1j, -1+0j, 0+0j), typecode='C')
 
-        # Plus a differently-sized vector, for testing size constraints.
-        # TODO
+        # Plus two differently-sized vectors, for testing size constraints.
+        self.y = vector.Vector((2.5, 0.5, -1.0, 1.0))
+        self.z = vector.Vector((-0.5j, 1-2j), typecode='C')
 
     def test_abs(self):
         """Test the absolute value (Euclidean norm) of a vector."""
@@ -160,6 +161,16 @@ class TestVectorOperations(unittest.TestCase):
         self.assertEqual(self.u @ self.u, 10.0)
         self.assertEqual(self.v @ self.v, 2.25)
 
+        # Does it fail when the vectors are of different sizes?
+        with self.assertRaises(TypeError):
+            self.u.dot(self.y)
+        with self.assertRaises(TypeError):
+            self.y.dot(self.u)
+        with self.assertRaises(TypeError):
+            self.u @ self.y
+        with self.assertRaises(TypeError):
+            self.y @ self.u
+
     def test_dot_complex(self):
         """Test the dot product of two complex vectors."""
         # Does it work using the dot() method?
@@ -173,6 +184,16 @@ class TestVectorOperations(unittest.TestCase):
         self.assertEqual(self.x @ self.w, 3-3j)
         self.assertEqual(self.w @ self.w, 3-4j)
         self.assertEqual(self.x @ self.x, 0+0j)
+
+        # Does it fail when the vectors are of different sizes?
+        with self.assertRaises(TypeError):
+            self.w.dot(self.z)
+        with self.assertRaises(TypeError):
+            self.z.dot(self.w)
+        with self.assertRaises(TypeError):
+            self.w @ self.z
+        with self.assertRaises(TypeError):
+            self.z @ self.w
 
     def test_dot_mixed(self):
         """Test the dot product of vectors of mixed types."""
@@ -210,6 +231,12 @@ class TestVectorOperations(unittest.TestCase):
         for expected, got in zip(expect_mixed, vector_sum_mixed):
             self.assertEqual(expected, got)
 
+        # Does addition fail when vectors are of different sizes?
+        with self.assertRaises(TypeError):
+            self.u + self.y
+        with self.assertRaises(TypeError):
+            self.w + self.z
+
     def test_iadd(self):
         """Test in-place addition of one vector to another."""
         # Real
@@ -239,3 +266,9 @@ class TestVectorOperations(unittest.TestCase):
         expect_v = (-1-1j, 0+0j, 0.5+0j)
         for expected, got in zip(expect_v, self.v):
             self.assertEqual(expected, got)
+
+        # Does addition fail when vectors are of different sizes?
+        with self.assertRaises(TypeError):
+            self.u += self.y
+        with self.assertRaises(TypeError):
+            self.w += self.z
