@@ -30,10 +30,11 @@ from ctypes import (ArgumentError, Structure, c_double, c_int, c_size_t,
                     pointer, POINTER)
 try:
     # Python 3.3+
-    from collections.abc import Iterable, Sequence, Sized
+    from collections.abc import Iterable, Sequence
 except ImportError:
     # Python 3.2 and earlier
-    from collections import Iterable, Sequence, Sized
+    from collections import Iterable, Sequence
+from numbers import Real
 
 # Third-party library imports (bundled with python-gsl).
 from . import finalize
@@ -122,7 +123,7 @@ native.gsl_blas_dznrm2.restype = c_double
 # Pythonic class wrapping vector functionality.
 class Vector(Sequence):
     """A vector, or one-dimensional matrix of scalar values."""
-    def __init__(self, *args, typecode='d'):
+    def __init__(self, *args, typecode=None):
         """Construct a new vector.
 
         Positional arguments:
@@ -132,15 +133,38 @@ class Vector(Sequence):
             integer giving the length of the new vector.
 
         Keyword arguments:
-            typecode -- 'd' (the default) for a vector of real numbers
-                (actually double-precision floating point), or 'C' for a
-                vector of complex numbers (using double-precision
-                floating point for the real and imaginary parts).
+            typecode -- 'd' for a vector of real numbers (actually
+                double-precision floating point), or 'C' for a vector of
+                complex numbers (using double-precision floating point
+                for the real and imaginary parts). If omitted, and the
+                positional argument is an iterable, the typecode is 'd'
+                if all elements of the iterable are real, and 'C'
+                otherwise. If the typecode is omitted and the positional
+                argument is a size, the default typecode is 'd'.
 
         """
         if len(args) != 1:
             raise TypeError('__init__() takes exactly 1 argument ({} '
                             'given)'.format(len(args)))
+
+        # Determine what the positional argument is meant to be for.
+        size_or_iterable = args[0]
+        if isinstance(size_or_iterable, Iterable):
+            init_vals = list(size_or_iterable)
+            size = len(init_vals)
+        else:
+            init_vals = None
+            size = size_or_iterable
+
+        # Determine the appropriate typecode, if not provided.
+        if typecode is None:
+            if init_vals is None:
+                # Default to 'd' in the absence of other information.
+                typecode = 'd'
+            else:
+                # Use 'd' if all values are real, 'C' otherwise.
+                typecode = ('d' if all(isinstance(x, Real) for x in init_vals)
+                            else 'C')
 
         # Use the typecode argument to pick the appropriate native functions.
         native_fns = {'d': (native.gsl_vector_alloc,
@@ -174,19 +198,16 @@ class Vector(Sequence):
         # it's a complex type, to convert Python complex to/from gsl_complex).
         self._typecode = typecode
 
-        size_or_iterable = args[0]
-
-        if (isinstance(size_or_iterable, Iterable) and
-            isinstance(size_or_iterable, Sized)):
+        if init_vals is not None:
             # Don't bother initialising the block, because we're just going to
             # overwrite it in a moment anyway.
-            size = len(size_or_iterable)
             self._alloc(size, init=False)
 
             for i in range(size):
-                self[i] = size_or_iterable[i]
+                self[i] = init_vals[i]
         else:
-            self._alloc(size_or_iterable, init=True)
+            # Initialise the block to all zeroes.
+            self._alloc(size, init=True)
 
         finalize.track_for_finalization(self, self._v_p, self._free_fn)
 

@@ -57,15 +57,12 @@ class TestVectorMemory(unittest.TestCase):
             # FIXME: This isn't really a MemoryError, but more detailed error
             # messages aren't being passed from GSL to Python... yet.
             v = vector.Vector(-1)
-        with self.assertRaises(ArgumentError):
-            # A generator may be iterable, but it lacks a len().
-            v = vector.Vector((x for x in range(4)))
 
         # Does it reject an unknown typecode?
         with self.assertRaises(ValueError):
             v = vector.Vector(5, typecode='This is not a valid type code.')
 
-    def test_init(self):
+    def test_init_by_size(self):
         """Test creation of a vector with default arguments."""
         # Can we create a vector of the default type (double)?
         v = vector.Vector(self.VECTOR_SIZE)
@@ -78,6 +75,20 @@ class TestVectorMemory(unittest.TestCase):
         for x in v:
             self.assertIsInstance(x, float)
             self.assertEqual(x, 0.0)
+
+    def test_init_by_complex_vals(self):
+        """Test creation of an implicitly complex vector."""
+        values = (3.0-0.5j, 0.1j)
+        # Can we create a vector from an iterable of complex numbers?
+        v = vector.Vector(values)
+
+        # Is it the right size?
+        self.assertEqual(len(v), len(values))
+
+        # Is it iterable, and are the elements the right type and value?
+        for expected, got in zip(values, v):
+            self.assertIsInstance(got, complex)
+            self.assertEqual(expected, got)
 
     def test_init_by_type(self):
         """Test creation of a vector with a typecode."""
