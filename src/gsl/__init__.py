@@ -29,17 +29,10 @@ __all__ = ['native', 'gsl_complex', 'gsl_mode_t', 'Mode',
 
 # Standard library imports.
 from enum import IntEnum
-from ctypes import CDLL, Structure, c_double, c_uint, c_void_p
-import sys
+from ctypes import Structure, c_double, c_void_p
 
-# Load the native library.
-libname = 'libgsl'
-libver = '0'
-filename_format = {
-    'darwin': '{name}.{ver}.dylib',
-    'win32': '{name}-{ver}.dll'
-    }.get(sys.platform, '{name}.so.{ver}')
-native = CDLL(filename_format.format(name=libname, ver=libver))
+# Import objects from submodules that are to be available at the package level.
+from _native import native
 
 native.gsl_set_error_handler_off.argtypes = ()
 native.gsl_set_error_handler_off.restype = c_void_p
