@@ -97,10 +97,13 @@ def exception_from_result(error_code):
 # "recommended behavior for production programs").
 def exception_on_error(reason, file, line, errno):
     """Raise a Python exception on GSL errors."""
-    exception_class = error_codes.get(error_code, Exception)
-    exception_text = '{} (file {!r}, line {})'.format(reason.decode(),
-                                                      file.decode(), line)
+    exception_class = error_codes.get(errno, Exception)
+    exception_text = reason.decode()
+
     raise exception_class(exception_text)
+
+# Stop handler references from being garbage collected.
+_handlers = []
 
 def set_error_handler(fn):
     """Set the given function as the GSL error handler.
@@ -126,6 +129,10 @@ def set_error_handler(fn):
         # Do the right thing if fn is a ctypes function pointer (as previously
         # returned by this very function), rather than a Python function that
         # needs wrapping with ErrorHandler.
-        return native.gsl_set_error_handler(ErrorHandler(fn)
-                                            if isinstance(fn, Callable) else
-                                            fn)
+        if isinstance(fn, Callable):
+            handler = ErrorHandler(fn)
+            _handlers.append(handler)
+        else:
+            handler = fn
+
+        return native.gsl_set_error_handler(handler)

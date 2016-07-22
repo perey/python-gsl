@@ -313,6 +313,11 @@ class Vector(Sequence):
         vector_p = (self._calloc_fn if init else self._alloc_fn)(size)
         if not vector_p:
             # Null pointer returned; insufficient memory is available.
+            # FIXME: Theoretically, this should no longer be necessary, because
+            # the error handler callback should get called (and raise a Python
+            # exception, indeed a MemoryError) when the allocation function
+            # fails. But for some reason this isn't happening, or else the unit
+            # test isn't recognising it as happening.
             raise exception_from_result(NO_MEMORY)
         else:
             self._v_p = vector_p
