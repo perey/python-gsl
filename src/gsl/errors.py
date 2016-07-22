@@ -23,17 +23,31 @@
 # You should have received a copy of the GNU General Public License
 # along with python-gsl. If not, see <http://www.gnu.org/licenses/>.
 
-__all__ = ['error_codes', 'exception_from_result']
+__all__ = ['error_codes', 'exception_from_result', 'exception_on_error',
+           'set_error_handler']
 
 # Standard library imports.
-from ctypes import c_char_p, c_int
+try:
+    # Python 3.3+
+    from collections.abc import Callable
+except ImportError:
+    # Python 3.2 and earlier
+    from collections import Callable
+from ctypes import CFUNCTYPE, c_char_p, c_int
 
 # Local imports.
-from . import native
+from ._native import native
 
 # Native function declarations.
 native.gsl_strerror.argtypes = (c_int,)
 native.gsl_strerror.restype = c_char_p
+
+ErrorHandler = CFUNCTYPE(None, c_char_p, c_char_p, c_int, c_int)
+native.gsl_set_error_handler.argtypes = (ErrorHandler,)
+native.gsl_set_error_handler.restype = ErrorHandler
+
+native.gsl_set_error_handler_off.argtypes = ()
+native.gsl_set_error_handler_off.restype = ErrorHandler
 
 # GSL error codes are perfectly well served by built-in exceptions, and we can
 # use the gsl_strerror() function to get a suitable error message.
@@ -76,3 +90,42 @@ def exception_from_result(error_code):
     error_message = native.gsl_strerror(error_code).decode()
 
     return exception_class(error_message)
+
+# Set up an error handler to raise Python exceptions, instead of (a) crashing
+# (the default GSL behaviour) or (b) continuing without giving any error
+# information except from functions that return an explicit error code (the
+# "recommended behavior for production programs").
+def exception_on_error(reason, file, line, errno):
+    """Raise a Python exception on GSL errors."""
+    exception_class = error_codes.get(error_code, Exception)
+    exception_text = '{} (file {!r}, line {})'.format(reason.decode(),
+                                                      file.decode(), line)
+    raise exception_class(exception_text)
+
+def set_error_handler(fn):
+    """Set the given function as the GSL error handler.
+
+    The function must accept four arguments:
+        reason -- a bytes object
+        file -- a bytes object
+        line -- an integer
+        errno -- an integer
+
+    If no function is given (the sole argument is None), GSL error
+    handling is disabled. GSL functions that return an error code will
+    still cause python-gsl to raise an exception, however.
+
+    Returns:
+        The previously-active error handler, which can be restored with
+        another call to set_error_handler().
+
+    """
+    if fn is None:
+        return native.gsl_set_error_handler_off()
+    else:
+        # Do the right thing if fn is a ctypes function pointer (as previously
+        # returned by this very function), rather than a Python function that
+        # needs wrapping with ErrorHandler.
+        return native.gsl_set_error_handler(ErrorHandler(fn)
+                                            if isinstance(fn, Callable) else
+                                            fn)

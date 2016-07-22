@@ -34,13 +34,11 @@ from ctypes import Structure, c_double, c_uint, c_void_p
 # Import objects from submodules that are to be available at the package level.
 from ._native import native
 
-native.gsl_set_error_handler_off.argtypes = ()
-native.gsl_set_error_handler_off.restype = c_void_p
+# Import objects from submodules that are used here.
+from .errors import exception_on_error, set_error_handler
 
-# Disable crash-on-error. Python exceptions will be raised instead.
-# TODO: This is the recommended setting for production code, but should it be
-# configurable by advanced users?
-native.gsl_set_error_handler_off()
+# Disable crash-on-error and raise Python exceptions instead.
+set_error_handler(exception_on_error)
 
 # Define GSL complex number formats.
 class gsl_complex(Structure):
