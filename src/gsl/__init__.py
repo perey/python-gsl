@@ -29,10 +29,10 @@ __all__ = ['native', 'gsl_complex', 'gsl_mode_t', 'Mode',
 
 # Standard library imports.
 from enum import IntEnum
-from ctypes import Structure, c_double, c_void_p
+from ctypes import Structure, c_double, c_uint, c_void_p
 
 # Import objects from submodules that are to be available at the package level.
-from _native import native
+from ._native import native
 
 native.gsl_set_error_handler_off.argtypes = ()
 native.gsl_set_error_handler_off.restype = c_void_p
