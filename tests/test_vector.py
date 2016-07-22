@@ -41,16 +41,15 @@ class TestVectorMemory(unittest.TestCase):
     """Test the low-level vector memory functions in python-gsl."""
     VECTOR_SIZE = 10
     def test_init_signature(self):
-        """Test that miscalling the constructor generates an error."""
-        # Does it require exactly one positional argument?
+        """Test whether miscalling the constructor generates an error."""
         with self.assertRaises(TypeError):
             v = vector.Vector()
 
         with self.assertRaises(TypeError):
             v = vector.Vector('Too many', 'arguments')
 
-        # Does it reject a positional argument that is neither a sized iterable
-        # nor a positive integer?
+    def test_init_bad_size(self):
+        """Test whether an invalid vector size generates an error."""
         with self.assertRaises(ArgumentError):
             v = vector.Vector(3.5)
         with self.assertRaises(MemoryError):
@@ -58,7 +57,8 @@ class TestVectorMemory(unittest.TestCase):
             # messages aren't being passed from GSL to Python... yet.
             v = vector.Vector(-1)
 
-        # Does it reject an unknown typecode?
+    def test_init_bad_typecode(self):
+        """Test whether a bad typecode generates an error."""
         with self.assertRaises(ValueError):
             v = vector.Vector(5, typecode='This is not a valid type code.')
 
