@@ -25,7 +25,7 @@ so are available from python-gsl.
 
 .. py:function:: alloc(size, typecode='d', init=False)
 
-   Allocate a new block of memory. If the optional ``alloc`` argument is
+   Allocate a new block of memory. If the optional ``init`` argument is
    :py:obj:`True`, the contents of the memory block are zeroed out.
 
    The native data type stored in the block is set by the ``typecode``
