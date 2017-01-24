@@ -273,7 +273,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'python-gsl', 'python-gsl Documentation',
-     author, 'python-gsl', 'One line description of project.',
+     author, 'python-gsl', 'Python binding for the GNU Scientific Library',
      'Miscellaneous'),
 ]
 
