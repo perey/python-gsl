@@ -31,21 +31,14 @@ In Abramowitz and Stegun, the Airy functions are covered in section 10.4
 
 Note that the GSL_ Airy functions accept only real arguments.
 
-.. py:function:: Ai(x, precision=Mode.default)
+.. py:function:: Ai(x, precision=Mode.default, scaled=False)
 
-.. py:function:: Ai_e(x, precision=Mode.default)
-
-Evaluate :math:`Ai(x)`, the Airy function of the first kind, in natural and
-error-handling versions.
-
-.. py:function:: Ai_scaled(x, precision=Mode.default)
-
-.. py:function:: Ai_scaled_e(x, precision=Mode.default)
+.. py:function:: Ai_e(x, precision=Mode.default, scaled=False)
 
 Evaluate :math:`Ai(x)`, the Airy function of the first kind, in natural and
-error-handling versions, with a scaling factor applied. For :math:`x < 0`,
-the scaling factor is 1. For :math:`x > 0`, over which :math:`Ai(x) \to 0`,
-the scaling factor is
+error-handling versions. If the ``scaled`` argument is ``True``, a scaling
+factor is applied. For :math:`x < 0`, the scaling factor is 1. For
+:math:`x > 0`, over which :math:`Ai(x) \to 0`, the scaling factor is
 :math:`s(x) = \exp \left( \frac{2}{3} x^\frac{3}{2} \right)`.
 
 .. py:function:: Bi(x, precision=Mode.default)
@@ -53,33 +46,18 @@ the scaling factor is
 .. py:function:: Bi_e(x, precision=Mode.default)
 
 Evaluate :math:`Bi(x)`, the Airy function of the second kind, in natural and
-error-handling versions.
-
-.. py:function:: Bi_scaled(x, precision=Mode.default)
-
-.. py:function:: Bi_scaled_e(x, precision=Mode.default)
-
-Evaluate :math:`Bi(x)`, the Airy function of the second kind, in natural and
-error-handling versions, with a scaling factor applied. For :math:`x < 0`,
-the scaling factor is 1. For :math:`x > 0`, over which
-:math:`Bi(x) \to \infty`, the scaling factor is
+error-handling versions. If the ``scaled`` argument is ``True``, a scaling
+factor is applied. For :math:`x < 0`, the scaling factor is 1. For
+:math:`x > 0`, over which :math:`Bi(x) \to \infty`, the scaling factor is
 :math:`s(x) = \exp \left( -\frac{2}{3} x^\frac{3}{2} \right)`.
 
-.. py:function:: Ai_deriv(x, precision=Mode.default)
+.. py:function:: Ai_deriv(x, precision=Mode.default, scaled=False)
 
-.. py:function:: Ai_deriv_e(x, precision=Mode.default)
+.. py:function:: Ai_deriv_e(x, precision=Mode.default, scaled=False)
 
-.. py:function:: Ai_deriv_scaled(x, precision=Mode.default)
+.. py:function:: Bi_deriv(x, precision=Mode.default, scaled=False)
 
-.. py:function:: Ai_deriv_scaled_e(x, precision=Mode.default)
-
-.. py:function:: Bi_deriv(x, precision=Mode.default)
-
-.. py:function:: Bi_deriv_e(x, precision=Mode.default)
-
-.. py:function:: Bi_deriv_scaled(x, precision=Mode.default)
-
-.. py:function:: Bi_deriv_scaled_e(x, precision=Mode.default)
+.. py:function:: Bi_deriv_e(x, precision=Mode.default, scaled=False)
 
 Evaluate :math:`Ai'(x)` and :math:`Bi'(x)`, the derivatives of the Airy
 functions of the first and second kinds.

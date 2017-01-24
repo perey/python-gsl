@@ -33,17 +33,53 @@ from . import sf_result_p, make_sf_result_p, sf_error_handler
 # Native function declarations.
 native.gsl_sf_airy_Ai.argtypes = (c_double, gsl_mode_t)
 native.gsl_sf_airy_Ai.restype = c_double
+native.gsl_sf_airy_Ai_scaled.argtypes = (c_double, gsl_mode_t)
+native.gsl_sf_airy_Ai_scaled.restype = c_double
 
-def Ai(x, precision=Mode.default):
+def Ai(x, precision=Mode.default, scaled=False):
     """Evaluate the Airy function of the first kind."""
-    return native.gsl_sf_airy_Ai(x, precision)
+    return (native.gsl_sf_airy_Ai_scaled(x, precision) if scaled else
+            native.gsl_sf_airy_Ai(x, precision))
 
 
 native.gsl_sf_airy_Ai_e.argtypes = (c_double, gsl_mode_t, sf_result_p)
 native.gsl_sf_airy_Ai_e.restype = c_int
 native.gsl_sf_airy_Ai_e.errcheck = sf_error_handler
+native.gsl_sf_airy_Ai_scaled_e.argtypes = (c_double, gsl_mode_t, sf_result_p)
+native.gsl_sf_airy_Ai_scaled_e.restype = c_int
+native.gsl_sf_airy_Ai_scaled_e.errcheck = sf_error_handler
 
-def Ai_e(x, precision=Mode.default):
+def Ai_e(x, precision=Mode.default, scaled=False):
     """Evaluate the Airy function of the first kind."""
-    result = native.gsl_sf_airy_Ai_e(x, precision, make_sf_result_p())
+    result_p = make_sf_result_p()
+    result = (native.gsl_sf_airy_Ai_scaled_e(x, precision,
+                                             result_p) if scaled else
+              native.gsl_sf_airy_Ai_e(x, precision, result_p))
+    return result.val, result.err
+
+
+native.gsl_sf_airy_Bi.argtypes = (c_double, gsl_mode_t)
+native.gsl_sf_airy_Bi.restype = c_double
+native.gsl_sf_airy_Bi_scaled.argtypes = (c_double, gsl_mode_t)
+native.gsl_sf_airy_Bi_scaled.restype = c_double
+
+def Bi(x, precision=Mode.default, scaled=False):
+    """Evaluate the Airy function of the second kind."""
+    return (native.gsl_sf_airy_Bi_scaled(x, precision) if scaled else
+            native.gsl_sf_airy_Bi(x, precision))
+
+
+native.gsl_sf_airy_Bi_e.argtypes = (c_double, gsl_mode_t, sf_result_p)
+native.gsl_sf_airy_Bi_e.restype = c_int
+native.gsl_sf_airy_Bi_e.errcheck = sf_error_handler
+native.gsl_sf_airy_Bi_scaled_e.argtypes = (c_double, gsl_mode_t, sf_result_p)
+native.gsl_sf_airy_Bi_scaled_e.restype = c_int
+native.gsl_sf_airy_Bi_scaled_e.errcheck = sf_error_handler
+
+def Bi_e(x, precision=Mode.default, scaled=False):
+    """Evaluate the Airy function of the second kind."""
+    result_p = make_sf_result_p()
+    result = (native.gsl_sf_airy_Bi_scaled_e(x, precision,
+                                             result_p) if scaled else
+              native.gsl_sf_airy_Bi_e(x, precision, result_p))
     return result.val, result.err
