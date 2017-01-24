@@ -141,39 +141,28 @@ class TestAiry(unittest.TestCase):
 
     def test_Ai(self):
         """Test the Airy function Ai(x) with default precision."""
-##        msg = ['']
         for x, scaled, y, tol in Ai_results:
             y_actual = airy.Ai(x, scaled=scaled)
             err_actual = abs(Decimal(y_actual) - y)
-##            msg.append('Ai({:.6}) = {:.6} (error {:.6})'.format(x, y_actual,
-##                                                                err_actual))
             err_msg = 'Ai({:.6}) = {:.6} ≉ {:.6}'.format(x, y_actual, y)
             self.assertFloatCloseToDecimal(y_actual, y, tol, msg=err_msg)
-##        self.assertTrue(False, msg='\n'.join(msg))
 
     def test_Ai_modes(self):
         """Test the Airy function Ai(x) with varying precision."""
-##        msg = ['']
         for x, scaled, y, tol in Ai_results:
             for precision, tol_mult in precision_options:
                 y_actual = airy.Ai(x, precision, scaled=scaled)
                 err_actual = abs(Decimal(y_actual) - y)
-##                msg.append('Ai({:.6}, {}) = {:.6} (error '
-##                           '{:.6})'.format(x, precision, y_actual, err_actual))
                 err_msg = ('Ai({:.6}) = {:.6} ≉ {:.6} at precision '
                            'level {}'.format(x, y_actual, y, precision))
                 self.assertFloatCloseToDecimal(y_actual, y, tol * tol_mult,
                                                msg=err_msg)
-##        self.assertTrue(False, msg='\n'.join(msg))
 
     def test_Ai_e(self):
         """Test the Airy function Ai_e(x) with default precision."""
-##        msg = ['']
         for x, scaled, y, tol in Ai_results:
             val, err = airy.Ai_e(x, scaled=scaled)
             err_actual = abs(Decimal(val) - y)
-##            msg.append('Ai({:.6}) = {:.6} (error {:.6}, '
-##                       'claimed {:.6})'.format(x, val, err_actual, err))
             err_msg_A = 'Ai({:.6}) = {:.6} ≠ {:.6} ± {:.6}'.format(x, val, y,
                                                                    err)
             err_msg_B = 'Ai({:.6}) = {:.6} = {:.6} ± {:.6}'.format(x, val, y,
@@ -181,18 +170,13 @@ class TestAiry(unittest.TestCase):
             self.assertFloatWithinErrOfDecimal(val, y, err, tol,
                                                msg_failbound=err_msg_A,
                                                msg_badbound=err_msg_B)
-##        self.assertTrue(False, msg='\n'.join(msg))
 
     def test_Ai_e_modes(self):
         """Test the Airy function Ai_e(x) with varying precision."""
-##        msg = ['']
         for x, scaled, y, tol in Ai_results:
             for precision, tol_mult in precision_options:
                 val, err = airy.Ai_e(x, precision, scaled=scaled)
                 err_actual = abs(Decimal(val) - y)
-##                msg.append('Ai({:.6}, {}) = {:.6} (error {:.6}, '
-##                           'claimed {:.6})'.format(x, precision, val,
-##                                                   err_actual, err))
                 err_msg_A = ('Ai({:.6}) = {:.6} ≠ {:.6} ± {:.6} at precision '
                              'level {}'.format(x, val, y, err, precision))
                 err_msg_B = ('Ai({:.6}) = {:.6} = {:.6} ± {:.6} at precision '
@@ -200,7 +184,6 @@ class TestAiry(unittest.TestCase):
                 self.assertFloatWithinErrOfDecimal(val, y, err, tol * tol_mult,
                                                msg_failbound=err_msg_A,
                                                msg_badbound=err_msg_B)
-##        self.assertTrue(False, msg='\n'.join(msg))
 
     def test_Bi(self):
         """Test the Airy function Bi(x) with default precision."""
