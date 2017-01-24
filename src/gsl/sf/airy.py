@@ -2,7 +2,7 @@
 
 """Airy functions for python-gsl."""
 
-# Copyright © 2016 Timothy Pederick.
+# Copyright © 2016, 2017 Timothy Pederick.
 #
 # Based on the GNU Scientific Library (GSL):
 #     Copyright © 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
