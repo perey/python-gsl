@@ -52,10 +52,11 @@ native.gsl_sf_airy_Ai_scaled_e.errcheck = sf_error_handler
 def Ai_e(x, precision=Mode.default, scaled=False):
     """The Airy function, with error checking."""
     result_p = make_sf_result_p()
-    result = (native.gsl_sf_airy_Ai_scaled_e(x, precision,
-                                             result_p) if scaled else
-              native.gsl_sf_airy_Ai_e(x, precision, result_p))
-    return result.val, result.err
+    if scaled:
+        native.gsl_sf_airy_Ai_scaled_e(x, precision, result_p)
+    else:
+        native.gsl_sf_airy_Ai_e(x, precision, result_p)
+    return result_p.contents.val, result_p.contents.err
 
 
 native.gsl_sf_airy_Bi.argtypes = (c_double, gsl_mode_t)
@@ -79,10 +80,11 @@ native.gsl_sf_airy_Bi_scaled_e.errcheck = sf_error_handler
 def Bi_e(x, precision=Mode.default, scaled=False):
     """The Bairy function, with error checking."""
     result_p = make_sf_result_p()
-    result = (native.gsl_sf_airy_Bi_scaled_e(x, precision,
-                                             result_p) if scaled else
-              native.gsl_sf_airy_Bi_e(x, precision, result_p))
-    return result.val, result.err
+    if scaled:
+        native.gsl_sf_airy_Bi_scaled_e(x, precision, result_p)
+    else:
+        native.gsl_sf_airy_Bi_e(x, precision, result_p)
+    return result_p.contents.val, result_p.contents.err
 
 native.gsl_sf_airy_Ai_deriv.argtypes = (c_double, gsl_mode_t)
 native.gsl_sf_airy_Ai_deriv.restype = c_double
@@ -105,10 +107,11 @@ native.gsl_sf_airy_Ai_deriv_scaled_e.errcheck = sf_error_handler
 def Ai_deriv_e(x, precision=Mode.default, scaled=False):
     """The derivative of the Airy function, with error checking."""
     result_p = make_sf_result_p()
-    result = (native.gsl_sf_airy_Ai_deriv_scaled_e(x, precision,
-                                                 result_p) if scaled else
-              native.gsl_sf_airy_Ai_deriv_e(x, precision, result_p))
-    return result.val, result.err
+    if scaled:
+        native.gsl_sf_airy_Ai_deriv_scaled_e(x, precision, result_p)
+    else:
+        native.gsl_sf_airy_Ai_deriv_e(x, precision, result_p)
+    return result_p.contents.val, result_p.contents.err
 
 native.gsl_sf_airy_Bi_deriv.argtypes = (c_double, gsl_mode_t)
 native.gsl_sf_airy_Bi_deriv.restype = c_double
@@ -131,7 +134,8 @@ native.gsl_sf_airy_Bi_deriv_scaled_e.errcheck = sf_error_handler
 def Bi_deriv_e(x, precision=Mode.default, scaled=False):
     """The derivative of the Bairy function, with error checking."""
     result_p = make_sf_result_p()
-    result = (native.gsl_sf_airy_Bi_deriv_scaled_e(x, precision,
-                                                 result_p) if scaled else
-              native.gsl_sf_airy_Bi_deriv_e(x, precision, result_p))
-    return result.val, result.err
+    if scaled:
+        native.gsl_sf_airy_Bi_deriv_scaled_e(x, precision, result_p)
+    else:
+        native.gsl_sf_airy_Bi_deriv_e(x, precision, result_p)
+    return result_p.contents.val, result_p.contents.err

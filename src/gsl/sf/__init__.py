@@ -47,9 +47,7 @@ def make_sf_result_p():
 
 
 def sf_error_handler(result, func, arguments):
-    """Check the return code and unpack the results."""
+    """Check the return code."""
     if result:
         raise exception_from_result(result)
-    else:
-        # A pointer to the gsl_sf_result struct is always the last argument.
-        return arguments[-1].contents
+    return result
