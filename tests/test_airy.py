@@ -2,7 +2,7 @@
 
 """Tests for Airy functions in python-gsl."""
 
-# Copyright © 2016, 2017 Timothy Pederick.
+# Copyright © 2016, 2017, 2019 Timothy Pederick.
 #
 # Based on the GNU Scientific Library (GSL):
 #     Copyright © 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
@@ -24,298 +24,190 @@
 # along with python-gsl. If not, see <http://www.gnu.org/licenses/>.
 
 # Standard library imports.
-from decimal import getcontext, Decimal
-from sys import float_info
 import unittest
 
 # Library to be tested.
 from gsl.sf import airy
 
-# Pre-calculated results, stored as tuples of the arguments and the correct
-# result, with tolerance levels. Results are correct to 32 significant figures,
-# which should be plenty; double precision is accurate to around 16 significant
-# figures, give or take, and the Airy function appears to be precise to only 14
-# s.f. on at least some inputs.
-getcontext().prec = 32
+# Define precisions here to avoid an extra import from gsl.
+DOUBLE, SINGLE, APPROX = 0, 1, 2
+DEFAULT = DOUBLE
+
 # These test cases include all of those in GSL's own test suite (namely, the
-# file test_airy.c), plus a few extra. The TOL[] tolerance multipliers are from
-# the GSL test suite as well. The FUDGE_FACTOR reflects GSL's own TEST_FACTOR.
-FUDGE_FACTOR = 100
-TOL = [FUDGE_FACTOR * base for base in [2, 16, 256, 2048, 16384, 131072]]
+# file test_airy.c), plus a few extra. GSL's "tolerance" and "test factor"
+# values have been abandoned in favour of lower and upper bounds.
+#
+# Each test case is a 3-tuple comprising an input value, a boolean stating
+# whether or not the test uses scaled values, and a dict of result bounds. Keys
+# in this dict are precisions, and values are 3-tuples giving a lower bound,
+# an expected value, and an upper bound. To avoid loss of precision from
+# decimal representation, bounds are given as hex strings that can be passed to
+# float.fromhex().
 Ai_results = [
-    # Unscaled values (hence the False).
+    # Unscaled values.
     (-500.0, False,
-     Decimal('7.2590120104041139611670153227232e-2'), TOL[4]),
+     {DOUBLE: ('0x1.295441fdc0cb3p-4', '0x1.295441fdc0cb4p-4',
+               '0x1.295441fdc0cb5p-4'),
+      SINGLE: ('0x1.295440p-4', '0x1.295442p-4', '0x1.295444p-4'),
+      APPROX: ('0x1.290p-4', '0x1.294p-4', '0x1.298p-4')}),
     (-50.0, False,
-     Decimal('-1.6188142361232092391519946940243e-1'), TOL[0]),
+     {DOUBLE: ('-0x1.4b887ce1f56eep-3', '-0x1.4b887ce1f56efp-3',
+               '-0x1.4b887ce1f56f0p-3'),
+      SINGLE: ('-0x1.4b887cp-3', '-0x1.4b8880p-3'),
+      APPROX: ('-0x1.4b4p-3', '-0x1.4bcp-3')}),
     (-5.0, False,
-     Decimal('3.5076100902411431978801632769674e-1'), TOL[0]),
+     {DOUBLE: ('0x1.672de4d9e1d31p-2', '0x1.672de4d9e1d32p-2',
+               '0x1.672de4d9e1d33p-2'),
+      SINGLE: ('0x1.672de2p-2', '0x1.672de4p-2', '0x1.672de6p-2'),
+      APPROX: ('0x1.670p-2', '0x1.670p-2', '0x1.678p-2')}),
     (-0.3000000000000094, False,
-     Decimal('4.3090309528558311939752211289317e-1'), TOL[0]),
+     {DOUBLE: ('0x1.b93ea937fcac5p-2', '0x1.b93ea937fcac6p-2',
+               '0x1.b93ea937fcac7p-2'),
+      SINGLE: ('0x1.b93ea8p-2', '0x1.b93eaap-2', '0x1.b93eacp-2'),
+      APPROX: ('0x1.b90p-2', '0x1.b94p-2', '0x1.b98p-2')}),
     (0.6999999999999907, False,
-     Decimal('1.8916240039815193192044855343497e-1'), TOL[0]),
+     {DOUBLE: ('0x1.8367939abe4ccp-3', '0x1.8367939abe4cdp-3',
+               '0x1.8367939abe4cep-3'),
+      SINGLE: ('0x1.836792p-3', '0x1.836794p-3', '0x1.836796p-3'),
+      APPROX: ('0x1.834p-3', '0x1.838p-3', '0x1.83cp-3')}),
     (1.649999999999991, False,
-     Decimal('5.8310586187208854519007748854133e-2'), TOL[0]),
+     {DOUBLE: ('0x1.ddae2995e8a9fp-5', '0x1.ddae2995e8aa0p-5',
+               '0x1.ddae2995e8aa1p-5'),
+      SINGLE: ('0x1.ddae28p-5', '0x1.ddae2ap-5', '0x1.ddae2cp-5'),
+      APPROX: ('0x1.dd8p-5', '0x1.ddcp-5', '0x1.de0p-5')}),
     (2.54999999999999, False,
-     Decimal('1.4461495132954284611259897809000e-2'), TOL[0]),
+     {DOUBLE: ('0x1.d9dfd052dac93p-7', '0x1.d9dfd052dac94p-7',
+               '0x1.d9dfd052dac95p-7'),
+      SINGLE: ('0x1.d9dfcep-7', '0x1.d9dfd0p-7', '0x1.d9dfd2p-7'),
+      APPROX: ('0x1.d98p-7', '0x1.d9cp-7', '0x1.da0p-7')}),
     (3.499999999999987, False,
-     Decimal('2.5840987869897000206587281676413e-3'), TOL[0]),
+     {DOUBLE: ('0x1.52b3f78f3beb9p-9', '0x1.52b3f78f3beb9p-9',
+               '0x1.52b3f78f3bebbp-9'),
+      SINGLE: ('0x1.52b3f6p-9', '0x1.52b3f8p-9', '0x1.52b3fap-9'),
+      APPROX: ('0x1.528p-9', '0x1.52cp-9', '0x1.530p-9')}),
     (5.0, False,
-     Decimal('1.0834442813607441734986502503346e-4'), TOL[0]),
+     {DOUBLE: ('0x1.c66df1a2952d4p-14', '0x1.c66df1a2952d5p-14',
+               '0x1.c66df1a2952d6p-14'),
+      SINGLE: ('0x1.c66df0p-14', '0x1.c66df2p-14', '0x1.c66df4p-14'),
+      APPROX: ('0x1.c64p-14', '0x1.c68p-14', '0x1.c6cp-14')}),
     (5.39999999999998, False,
-     Decimal('4.2729861694118644028501437917295e-5'), TOL[0]),
+     {DOUBLE: ('0x1.6671ade499cdep-15', '0x1.6671ade499cdfp-15',
+               '0x1.6671ade499ce0p-15'),
+      SINGLE: ('0x1.6671acp-15', '0x1.6671aep-15', '0x1.6671b0p-15'),
+      APPROX: ('0x1.664p-15', '0x1.668p-15', '0x1.66cp-15')}),
     (10.0, False,
-     Decimal('1.1047532552898685933550205657992e-10'), TOL[0]),
-    # Scaled values (hence the True).
+     {DOUBLE: ('0x1.e5e028a1f8cd9p-34', '0x1.e5e028a1f8cdap-34',
+               '0x1.e5e028a1f8cdbp-34'),
+      SINGLE: ('0x1.e5e026p-34', '0x1.e5e028p-34', '0x1.e5e02ap-34'),
+      APPROX: ('0x1.e5cp-34', '0x1.e60p-34', '0x1.e64p-34')}),
+    # Scaled values.
     (-5.0, True,
-     Decimal('3.5076100902411431978801632769674e-1'), TOL[0]),
+     {DOUBLE: ('0x1.672de4d9e1d31p-2', '0x1.672de4d9e1d32p-2',
+               '0x1.672de4d9e1d33p-2'),
+      SINGLE: ('0x1.672de2p-2', '0x1.672de4p-2', '0x1.672de6p-2'),
+      APPROX: ('0x1.670p-2', '0x1.674p-2', '0x1.678p-2')}),
     (-0.3000000000000094, True,
-     Decimal('4.3090309528558311939752211289317e-1'), TOL[0]),
+     {DOUBLE: ('0x1.b93ea937fcac5p-2', '0x1.b93ea937fcac6p-2',
+               '0x1.b93ea937fcac7p-2'),
+      SINGLE: ('0x1.b93ea7p-2', '0x1.b93eabp-2'),
+      APPROX: ('0x1.b90p-2', '0x1.b98p-2')}),
     (0.6999999999999907, True,
-     Decimal('2.7951256676812170729652582022223e-1'), TOL[0]),
+     {DOUBLE: ('0x1.1e388ad45c42ep-2', '0x1.1e388ad45c42fp-2',
+               '0x1.1e388ad45c430p-2'),
+      SINGLE: ('0x1.1e388ad45c42ep-2', '0x1.1e388ad45c430p-2'),
+      APPROX: ('0x1.1e388ad45c42ep-2', '0x1.1e388ad45c430p-2')}),
     (1.649999999999991, True,
-     Decimal('2.3954930014427412216878383646911e-1'), TOL[0]),
+     {DOUBLE: ('0x1.ea98d2cf31dbfp-3', '0x1.ea98d2cf31dc0p-3',
+               '0x1.ea98d2cf31dc1p-3'),
+      SINGLE: ('0x1.ea98d0p-3', '0x1.ea98d2p-3', '0x1.ea98d4p-3'),
+      APPROX: ('0x1.ea4p-3', '0x1.ea8p-3', '0x1.eacp-3')}),
     (2.54999999999999, True,
-     Decimal('2.1836585958993876885076461974854e-1'), TOL[0]),
+     {DOUBLE: ('0x1.bf36998c03831p-3', '0x1.bf36998c03832p-3',
+               '0x1.bf36998c03833p-3'),
+      SINGLE: ('0x1.bf3698p-3', '0x1.bf369ap-3', '0x1.bf369cp-3'),
+      APPROX: ('0x1.bf0p-3', '0x1.bf4p-3', '0x1.bf8p-3')}),
     (3.499999999999987, True,
-     Decimal('2.0329208081635192033032302641595e-1'), TOL[0]),
+     {DOUBLE: ('0x1.a057993522db9p-3', '0x1.a057993522dbap-3',
+               '0x1.a057993522dbbp-3'),
+      SINGLE: ('0x1.a05798p-3', '0x1.a0579ap-3', '0x1.a0579cp-3'),
+      APPROX: ('0x1.a00p-3', '0x1.a04p-3', '0x1.a08p-3')}),
     (5.0, True,
-     Decimal('1.8700211893594342704307446877122e-1'), TOL[0]),
+     {DOUBLE: ('0x1.7efaf788e68ffp-3', '0x1.7efaf788e6900p-3',
+               '0x1.7efaf788e6901p-3'),
+      SINGLE: ('0x1.7efaf6p-3', '0x1.7efaf8p-3', '0x1.7efafap-3'),
+      APPROX: ('0x1.7ecp-3', '0x1.7f0p-3', '0x1.7f4p-3')}),
     (5.39999999999998, True,
-     Decimal('1.8360500932822289225958698259612e-1'), TOL[0]),
+     {DOUBLE: ('0x1.7805e733926a7p-3', '0x1.7805e733926a8p-3',
+               '0x1.7805e733926a9p-3'),
+      SINGLE: ('0x1.7805e6p-3', '0x1.7805e8p-3', '0x1.7805eap-3'),
+      APPROX: ('0x1.77cp-3', '0x1.780p-3', '0x1.784p-3')}),
     (10.0, True,
-     Decimal('1.5812366685434615027670590801715e-1'), TOL[0])
+     {DOUBLE: ('0x1.43d6574ee774dp-3', '0x1.43d6574ee774ep-3',
+               '0x1.43d6574ee774fp-3'),
+      SINGLE: ('0x1.43d656p-3', '0x1.43d658p-3', '0x1.43d65ap-3'),
+      APPROX: ('0x1.40p-3', '0x1.44p-3', '0x1.48p-3')})
     ]
-Bi_results = [
-    # Unscaled values (hence the False).
-    (-500.0, False,
-     Decimal('-9.468857013299102759024882298424e-2'), TOL[4]),
-    (-5.0, False,
-     Decimal('-1.383691349016005768500291756026e-1'), TOL[1]),
-    (0.6999999999999907, False,
-     Decimal('9.7332865587815985070364281848789e-1'), TOL[0]),
-    (1.649999999999991, False,
-     Decimal('2.1964079568500268546349607579902e+0'), TOL[0]),
-    (2.54999999999999, False,
-     Decimal('6.9736286124934413303450554518315e+0'), TOL[0]),
-    (3.499999999999987, False,
-     Decimal('3.3055506754610710278102755298867e+1'), TOL[1]),
-    (5.39999999999998, False, # GSL has this test at tolerance 1, but it fails!
-     Decimal('1.6044760782412720261513800574101e+3'), TOL[3]),
-    # Scaled values (hence the True).
-    (-5.0, True,
-     Decimal('-1.383691349016005768500291756026e-1'), TOL[1]),
-    (0.6999999999999907, True,
-     Decimal('6.5870807545823016108399595887626e-1'), TOL[0]),
-    (1.649999999999991, True,
-     Decimal('5.3464499955975391990047888662779e-1'), TOL[0]),
-    (2.54999999999999, True,
-     Decimal('4.6183545554229703369518985944157e-1'), TOL[0]),
-    (3.499999999999987, True,
-     Decimal('4.2017718823530615435327440920220e-1'), TOL[1]),
-    (5.39999999999998, True,
-     Decimal('3.7340506757204726741824612487870e-1'), TOL[0])
-    ]
-Ai_deriv_results = [
-    # Unscaled values (hence the False).
-    (-5.0, False,
-     Decimal('3.2719281855444313679487867742663e-1'), TOL[1]),
-    (-0.5500000000000094, False,
-     Decimal('-1.9146049871436292755486946822609e-1'), TOL[0]),
-    (0.4999999999999906, False,
-     Decimal('-2.2491053266468498209594745024072e-1'), TOL[0]),
-    (1.899999999999992, False,
-     Decimal('-6.0436781785757157184946483814585e-2'), TOL[0]),
-    (3.249999999999988, False,
-     Decimal('-7.7926879267908833772060718578870e-3'), TOL[0]),
-    (5.199999999999981, False,
-     Decimal('-1.5894345264595426732471307634487e-4'), TOL[1]),
-    # Scaled values (hence the True).
-    (-5.0, True,
-     Decimal('3.2719281855444313679487867742663e-1'), TOL[1]),
-## Test failing: GSL returns an unacceptably loose error bound of about 0.022.
-##    (0.5499999999999906, True,
-##     Decimal('-2.8740572791701654482467155465868e-1'), TOL[0]),
-    (1.499999999999991, True,
-     Decimal('-3.3141997968636364461057129926575e-1'), TOL[0]),
-    (2.49999999999999, True,
-     Decimal('-3.6610893847516191120591812628061e-1'), TOL[0]),
-    (3.649999999999986, True,
-     Decimal('-3.9740338314539630031490088308012e-1'), TOL[0]),
-    (6.299999999999977, True,
-     Decimal('-4.5087991895859474095960874914971e-1'), TOL[0])
-    ]
-precision_options = ((0, 1),             # Double
-                     (1, 5 * 10 ** 8),   # Single
-                     (2, 25 * 10 ** 11)) # Approximate
 
 # Test cases.
 class TestAiry(unittest.TestCase):
     """Test the Airy functions in python-gsl."""
-    def assertFloatCloseToDecimal(self, f, d, tol, msg=None):
-        """Check float and Decimal equality to suitable precision."""
-        d_f = Decimal(f)
-        acceptable = (0 if d_f == d == 0 else
-                      abs((d_f - d) / (d_f + d))) * tol
+    def assertFloatInBounds(self, f, bounds, msg=None):
+        """Check that a float is within bounds."""
+        lhex, _, hhex = bounds
+        l, h = (float.fromhex(bound) for bound in (lhex, hhex))
+        self.assertGreaterEqual(f, l, msg=msg)
+        self.assertLessEqual(f, h, msg=msg)
 
-        self.assertAlmostEqual(d_f, d, delta=acceptable, msg=msg)
-
-    def assertFloatWithinErrOfDecimal(self, f, d, err, tol, msg_failbound=None,
-                                      msg_badbound=None):
-        """Check float and Decimal equality and error margin."""
-        d_f = Decimal(f)
-        acceptable = (0 if d_f == d == 0 else
-                      abs((d_f - d) / (d_f + d))) * tol
-
-        self.assertAlmostEqual(d_f, d, delta=err, msg=msg_failbound)
-        self.assertLess(err, acceptable, msg=msg_badbound)
+    def assertFloatWithinErr(self, f, expected, err, msg=None):
+        """Check that a float is within an error margin."""
+        self.assertAlmostEqual(f, float.fromhex(expected), delta=err,
+                               msg=msg)
 
     def test_Ai(self):
         """Test the Airy function Ai(x) with default precision."""
-        for x, scaled, y, tol in Ai_results:
+        for x, scaled, y_bounds in Ai_results:
             y_actual = airy.Ai(x, scaled=scaled)
-            err_actual = abs(Decimal(y_actual) - y)
-            err_msg = 'Ai({:.6}, {}) = {:.6} ≉ {:.6}'.format(x, scaled,
-                                                             y_actual, y)
-            self.assertFloatCloseToDecimal(y_actual, y, tol, msg=err_msg)
+            default_bounds = y_bounds[DEFAULT]
+            err_msg = 'Ai({:.6}, {}) not in bounds'.format(x, scaled)
+            self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
 
     def test_Ai_modes(self):
         """Test the Airy function Ai(x) with varying precision."""
-        for x, scaled, y, tol in Ai_results:
-            for precision, tol_mult in precision_options:
+        for x, scaled, y_bounds in Ai_results:
+            for precision in y_bounds:
                 y_actual = airy.Ai(x, precision, scaled=scaled)
-                err_actual = abs(Decimal(y_actual) - y)
-                err_msg = ('Ai({:.6}, {}) = {:.6} ≉ {:.6} at precision '
-                           'level {}'.format(x, scaled, y_actual, y,
-                                             precision))
-                self.assertFloatCloseToDecimal(y_actual, y, tol * tol_mult,
-                                               msg=err_msg)
+                bounds = y_bounds[precision]
+                err_msg = ('Ai({:.6}, {}) not in bounds at precision level '
+                           '{}'.format(x, scaled, precision))
+                self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
 
     def test_Ai_e(self):
         """Test the Airy function Ai_e(x) with default precision."""
-        for x, scaled, y, tol in Ai_results:
+        for x, scaled, y_bounds in Ai_results:
             val, err = airy.Ai_e(x, scaled=scaled)
-            err_actual = abs(Decimal(val) - y)
-            err_msg_A = ('Ai({:.6}, {}) = {:.6} '
-                         '≠ {:.6} ± {:.6}'.format(x, scaled, val, y, err))
-            err_msg_B = ('Ai({:.6}, {}) = {:.6} '
-                         '= {:.6} ± {:.6}'.format(x, scaled, val, y, err))
-            self.assertFloatWithinErrOfDecimal(val, y, err, tol,
-                                               msg_failbound=err_msg_A,
-                                               msg_badbound=err_msg_B)
+            default_bounds = y_bounds[DEFAULT]
+
+            err_failerr = ('Ai_e({:.6}, {}) not within claimed error '
+                           '(±{:.6})'.format(x, scaled, err))
+            _, y, _ = default_bounds
+            self.assertFloatWithinErr(val, y, err, msg=err_failerr)
+
+            err_outofbounds = 'Ai_e({:.6}, {}) not in bounds'.format(x, scaled)
+            self.assertFloatInBounds(val, default_bounds, msg=err_outofbounds)
 
     def test_Ai_e_modes(self):
         """Test the Airy function Ai_e(x) with varying precision."""
-        for x, scaled, y, tol in Ai_results:
-            for precision, tol_mult in precision_options:
+        for x, scaled, y_bounds in Ai_results:
+            for precision in y_bounds:
                 val, err = airy.Ai_e(x, precision, scaled=scaled)
-                err_actual = abs(Decimal(val) - y)
-                err_msg_A = ('Ai({:.6}, {}) = {:.6} ≠ {:.6} ± {:.6} at '
-                             'precision level {}'.format(x, scaled, val, y,
-                                                         err, precision))
-                err_msg_B = ('Ai({:.6}, {}) = {:.6} = {:.6} ± {:.6} at '
-                             'precision level {}'.format(x, scaled, val, y,
-                                                         err, precision))
-                self.assertFloatWithinErrOfDecimal(val, y, err, tol * tol_mult,
-                                               msg_failbound=err_msg_A,
-                                               msg_badbound=err_msg_B)
+                bounds = y_bounds[precision]
 
-    def test_Bi(self):
-        """Test the Airy function Bi(x) with default precision."""
-        for x, scaled, y, tol in Bi_results:
-            y_actual = airy.Bi(x, scaled=scaled)
-            err_actual = abs(Decimal(y_actual) - y)
-            err_msg = ('Bi({:.6}, {}) = {:.6} ≉ {:.6}'.format(x, scaled,
-                                                              y_actual, y))
-            self.assertFloatCloseToDecimal(y_actual, y, tol, msg=err_msg)
+                err_failerr = ('Ai_e({:.6}, {}) not within claimed error '
+                               '(±{:.6}) at precision level '
+                               '{}'.format(x, scaled, err, precision))
+                _, y, _ = bounds
+                self.assertFloatWithinErr(val, y, err, msg=err_failerr)
 
-    def test_Bi_modes(self):
-        """Test the Airy function Bi(x) with varying precision."""
-        for x, scaled, y, tol in Bi_results:
-            for precision, tol_mult in precision_options:
-                y_actual = airy.Bi(x, precision, scaled=scaled)
-                err_actual = abs(Decimal(y_actual) - y)
-                err_msg = ('Bi({:.6}, {}) = {:.6} ≉ {:.6} at precision '
-                           'level {}'.format(x, scaled, y_actual, y,
-                                             precision))
-                self.assertFloatCloseToDecimal(y_actual, y, tol * tol_mult,
-                                               msg=err_msg)
-
-    def test_Bi_e(self):
-        """Test the Airy function Bi_e(x) with default precision."""
-        for x, scaled, y, tol in Bi_results:
-            val, err = airy.Bi_e(x, scaled=scaled)
-            err_actual = abs(Decimal(val) - y)
-            err_msg_A = ('Bi({:.6}, {}) = {:.6} '
-                         '≠ {:.6} ± {:.6}'.format(x, scaled, val, y, err))
-            err_msg_B = ('Bi({:.6}, {}) = {:.6} '
-                         '= {:.6} ± {:.6}'.format(x, scaled, val, y, err))
-            self.assertFloatWithinErrOfDecimal(val, y, err, tol,
-                                               msg_failbound=err_msg_A,
-                                               msg_badbound=err_msg_B)
-
-    def test_Bi_e_modes(self):
-        """Test the Airy function Bi_e(x) with varying precision."""
-        for x, scaled, y, tol in Bi_results:
-            for precision, tol_mult in precision_options:
-                val, err = airy.Bi_e(x, precision, scaled=scaled)
-                err_actual = abs(Decimal(val) - y)
-                err_msg_A = ('Bi({:.6}, {}) = {:.6} ≠ {:.6} ± {:.6} at '
-                             'precision level {}'.format(x, scaled, val, y,
-                                                         err, precision))
-                err_msg_B = ('Bi({:.6}, {}) = {:.6} = {:.6} ± {:.6} at '
-                             'precision level {}'.format(x, scaled, val, y,
-                                                         err, precision))
-                self.assertFloatWithinErrOfDecimal(val, y, err, tol * tol_mult,
-                                               msg_failbound=err_msg_A,
-                                               msg_badbound=err_msg_B)
-
-    def test_Ai_deriv(self):
-        """Test the Airy derivative Ai_deriv(x) with default precision."""
-        for x, scaled, y, tol in Ai_deriv_results:
-            y_actual = airy.Ai_deriv(x, scaled=scaled)
-            err_actual = abs(Decimal(y_actual) - y)
-            err_msg = 'Ai({:.6}, {}) = {:.6} ≉ {:.6}'.format(x, scaled,
-                                                             y_actual, y)
-            self.assertFloatCloseToDecimal(y_actual, y, tol, msg=err_msg)
-
-    def test_Ai_deriv_modes(self):
-        """Test the Airy derivative Ai_deriv(x) with varying precision."""
-        for x, scaled, y, tol in Ai_deriv_results:
-            for precision, tol_mult in precision_options:
-                y_actual = airy.Ai_deriv(x, precision, scaled=scaled)
-                err_actual = abs(Decimal(y_actual) - y)
-                err_msg = ('Ai({:.6}, {}) = {:.6} ≉ {:.6} at precision '
-                           'level {}'.format(x, scaled, y_actual, y,
-                                             precision))
-                self.assertFloatCloseToDecimal(y_actual, y, tol * tol_mult,
-                                               msg=err_msg)
-
-    def test_Ai_deriv_e(self):
-        """Test the Airy derivative Ai_deriv_e(x) with default precision."""
-        for x, scaled, y, tol in Ai_deriv_results:
-            val, err = airy.Ai_deriv_e(x, scaled=scaled)
-            err_actual = abs(Decimal(val) - y)
-            err_msg_A = ('Ai({:.6}, {}) = {:.6} '
-                         '≠ {:.6} ± {:.6}'.format(x, scaled, val, y, err))
-            err_msg_B = ('Ai({:.6}, {}) = {:.6} '
-                         '= {:.6} ± {:.6}'.format(x, scaled, val, y, err))
-            self.assertFloatWithinErrOfDecimal(val, y, err, tol,
-                                               msg_failbound=err_msg_A,
-                                               msg_badbound=err_msg_B)
-
-    def test_Ai_deriv_e_modes(self):
-        """Test the Airy derivative Ai_deriv_e(x) with varying precision."""
-        for x, scaled, y, tol in Ai_deriv_results:
-            for precision, tol_mult in precision_options:
-                val, err = airy.Ai_deriv_e(x, precision, scaled=scaled)
-                err_actual = abs(Decimal(val) - y)
-                err_msg_A = ('Ai({:.6}, {}) = {:.6} ≠ {:.6} ± {:.6} at '
-                             'precision level {}'.format(x, scaled, val, y,
-                                                         err, precision))
-                err_msg_B = ('Ai({:.6}, {}) = {:.6} = {:.6} ± {:.6} at '
-                             'precision level {}'.format(x, scaled, val, y,
-                                                         err, precision))
-                self.assertFloatWithinErrOfDecimal(val, y, err, tol * tol_mult,
-                                               msg_failbound=err_msg_A,
-                                               msg_badbound=err_msg_B)
+                err_outofbounds = ('Ai_e({:.6}, {}) not in bounds at precision'
+                                   ' level {}'.format(x, scaled, precision))
+                self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
