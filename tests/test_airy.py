@@ -98,107 +98,110 @@ class TestAiry(unittest.TestCase):
         self.assertGreaterEqual(f, l, msg=msg)
         self.assertLessEqual(f, h, msg=msg)
 
-    def assertFloatWithinErr(self, f, expected, err, msg=None):
-        """Check that a float is within an error margin."""
-        # assertAlmostEqual uses subtraction, which isn't supported between
-        # float and Decimal.
-        d_f = Decimal(f)
-        self.assertAlmostEqual(d_f, expected, delta=err, msg=msg)
-
     def test_Ai(self):
         """Test the Airy function Ai(x) with default precision."""
         for x, y_bounds, _ in Ai_results:
-            y_actual = airy.Ai(x, scaled=False)
-            default_bounds = y_bounds[DEFAULT]
-            err_msg = 'Ai({:.6}) not in bounds'.format(x)
-            self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
+            with self.subTest(x=x):
+                y_actual = airy.Ai(x, scaled=False)
+                default_bounds = y_bounds[DEFAULT]
+                err_msg = 'Ai({:.6}) not in bounds'.format(x)
+                self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
 
     def test_Ai_scaled(self):
         """Test the scaled Airy function Ai(x) with default precision."""
         for x, _, y_bounds in Ai_results:
-            y_actual = airy.Ai(x, scaled=True)
-            default_bounds = y_bounds[DEFAULT]
-            err_msg = 'Ai({:.6}) not in bounds'.format(x)
-            self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
+            with self.subTest(x=x):
+                y_actual = airy.Ai(x, scaled=True)
+                default_bounds = y_bounds[DEFAULT]
+                err_msg = 'Ai({:.6}) not in bounds'.format(x)
+                self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
 
     def test_Ai_modes(self):
         """Test the Airy function Ai(x) with varying precision."""
         for x, y_bounds, _ in Ai_results:
             for precision in y_bounds:
-                y_actual = airy.Ai(x, precision, scaled=False)
-                bounds = y_bounds[precision]
-                err_msg = ('Ai({:.6}) not in bounds at precision level '
-                           '{}'.format(x, precision))
-                self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
+                with self.subTest(x=x, precision=precision):
+                    y_actual = airy.Ai(x, precision, scaled=False)
+                    bounds = y_bounds[precision]
+                    err_msg = ('Ai({:.6}) not in bounds at precision level '
+                               '{}'.format(x, precision))
+                    self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
 
     def test_Ai_modes_scaled(self):
         """Test the scaled Airy function Ai(x) with varying precision."""
         for x, _, y_bounds in Ai_results:
             for precision in y_bounds:
-                y_actual = airy.Ai(x, precision, scaled=True)
-                bounds = y_bounds[precision]
-                err_msg = ('Ai({:.6}) not in bounds at precision level '
-                           '{}'.format(x, precision))
-                self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
+                with self.subTest(x=x, precision=precision):
+                    y_actual = airy.Ai(x, precision, scaled=True)
+                    bounds = y_bounds[precision]
+                    err_msg = ('Ai({:.6}) not in bounds at precision level '
+                               '{}'.format(x, precision))
+                    self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
 
     def test_Ai_e(self):
         """Test the Airy function Ai_e(x) with default precision."""
         for x, y_bounds, _ in Ai_results:
-            val, err = airy.Ai_e(x, scaled=False)
-            default_bounds = y_bounds[DEFAULT]
+            with self.subTest(x=x):
+                val, err = airy.Ai_e(x, scaled=False)
+                default_bounds = y_bounds[DEFAULT]
 
-            err_failerr = ('Ai_e({:.6}) not within claimed error '
-                           '(±{:.6})'.format(x, err))
-            _, y, _ = default_bounds
-            self.assertFloatWithinErr(val, y, err, msg=err_failerr)
+                err_failerr = ('Ai_e({:.6}) not within claimed error '
+                               '(±{:.6})'.format(x, err))
+                _, y, _ = default_bounds
+                self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
 
-            err_outofbounds = 'Ai_e({:.6}) not in bounds'.format(x)
-            self.assertFloatInBounds(val, default_bounds, msg=err_outofbounds)
+                err_outofbounds = 'Ai_e({:.6}) not in bounds'.format(x)
+                self.assertFloatInBounds(val, default_bounds,
+                                         msg=err_outofbounds)
 
     def test_Ai_e_scaled(self):
         """Test the scaled Airy function Ai_e(x) with default precision."""
         for x, _, y_bounds in Ai_results:
-            val, err = airy.Ai_e(x, scaled=True)
-            default_bounds = y_bounds[DEFAULT]
+            with self.subTest(x=x):
+                val, err = airy.Ai_e(x, scaled=True)
+                default_bounds = y_bounds[DEFAULT]
 
-            err_failerr = ('Ai_e({:.6}) not within claimed error '
-                           '(±{:.6})'.format(x, err))
-            _, y, _ = default_bounds
-            self.assertFloatWithinErr(val, y, err, msg=err_failerr)
+                err_failerr = ('Ai_e({:.6}) not within claimed error '
+                               '(±{:.6})'.format(x, err))
+                _, y, _ = default_bounds
+                self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
 
-            err_outofbounds = 'Ai_e({:.6}) not in bounds'.format(x)
-            self.assertFloatInBounds(val, default_bounds, msg=err_outofbounds)
+                err_outofbounds = 'Ai_e({:.6}) not in bounds'.format(x)
+                self.assertFloatInBounds(val, default_bounds,
+                                         msg=err_outofbounds)
 
     def test_Ai_e_modes(self):
         """Test the Airy function Ai_e(x) with varying precision."""
         for x, y_bounds, _ in Ai_results:
             for precision in y_bounds:
-                val, err = airy.Ai_e(x, precision, scaled=False)
-                bounds = y_bounds[precision]
+                with self.subTest(x=x, precision=precision):
+                    val, err = airy.Ai_e(x, precision, scaled=False)
+                    bounds = y_bounds[precision]
 
-                err_failerr = ('Ai_e({:.6}) not within claimed error '
-                               '(±{:.6}) at precision level '
-                               '{}'.format(x, err, precision))
-                _, y, _ = bounds
-                self.assertFloatWithinErr(val, y, err, msg=err_failerr)
+                    err_failerr = ('Ai_e({:.6}) not within claimed error '
+                                   '(±{:.6}) at precision level '
+                                   '{}'.format(x, err, precision))
+                    _, y, _ = bounds
+                    self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
 
-                err_outofbounds = ('Ai_e({:.6}) not in bounds at precision'
-                                   ' level {}'.format(x, precision))
-                self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
+                    err_outofbounds = ('Ai_e({:.6}) not in bounds at precision'
+                                       ' level {}'.format(x, precision))
+                    self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
 
     def test_Ai_e_modes_scaled(self):
         """Test the scaled Airy function Ai_e(x) with varying precision."""
         for x, _, y_bounds in Ai_results:
             for precision in y_bounds:
-                val, err = airy.Ai_e(x, precision, scaled=True)
-                bounds = y_bounds[precision]
+                with self.subTest(x=x, precision=precision):
+                    val, err = airy.Ai_e(x, precision, scaled=True)
+                    bounds = y_bounds[precision]
 
-                err_failerr = ('Ai_e({:.6}) not within claimed error '
-                               '(±{:.6}) at precision level '
-                               '{}'.format(x, err, precision))
-                _, y, _ = bounds
-                self.assertFloatWithinErr(val, y, err, msg=err_failerr)
+                    err_failerr = ('Ai_e({:.6}) not within claimed error '
+                                   '(±{:.6}) at precision level '
+                                   '{}'.format(x, err, precision))
+                    _, y, _ = bounds
+                    self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
 
-                err_outofbounds = ('Ai_e({:.6}) not in bounds at precision'
-                                   ' level {}'.format(x, precision))
-                self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
+                    err_outofbounds = ('Ai_e({:.6}) not in bounds at precision'
+                                       ' level {}'.format(x, precision))
+                    self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
