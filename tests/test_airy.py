@@ -24,75 +24,18 @@
 # along with python-gsl. If not, see <http://www.gnu.org/licenses/>.
 
 # Standard library imports.
-import csv
-from decimal import getcontext, Decimal
-from pathlib import Path
-import struct
 import unittest
+
+# Local utility module.
+from utils import DEFAULT, readtests
 
 # Library to be tested.
 from gsl.sf import airy
 
-# Define precisions here to avoid an extra import from gsl.
-DOUBLE, SINGLE, APPROX = 0, 1, 2
-DEFAULT = DOUBLE
-
-# Utility functions for manipulating floating-point representations.
-STRUCT_CODES = {DOUBLE: ('!d', '!Q'),
-                SINGLE: ('!f', '!L'),
-                APPROX: ('!e', '!H')}
-
-def int_from_float(f, precision):
-    float_code, int_code = STRUCT_CODES[precision]
-    return struct.unpack(int_code, struct.pack(float_code, f))[0]
-
-def float_from_int(i, precision):
-    float_code, int_code = STRUCT_CODES[precision]
-    return struct.unpack(float_code, struct.pack(int_code, i))[0]
-
-def bounds(n):
-    bounds_dict = {}
-    for precision in (DOUBLE, SINGLE, APPROX):
-        n_as_int = int_from_float(n, precision)
-
-        # At half precision, some values may be too small to distinguish from
-        # zero. The smallest negative half-precision float maps to the unsigned
-        # short integer 32769.
-        if n_as_int == 0:
-            low_as_int = 32769
-            high_as_int = n_as_int + 1
-        else:
-            low_as_int, high_as_int = n_as_int - 1, n_as_int + 1
-        low, high = (float_from_int(low_as_int, precision),
-                     float_from_int(high_as_int, precision))
-        bounds_dict[precision] = (low, float(n), high)
-    return bounds_dict
-
-# The test files use 32 decimal digits, far more than enough for double
-# precision.
-getcontext().prec = 32
-
-# Read in test cases. These test cases include all of those in GSL's own test
-# suite (namely, the file test_airy.c), plus a few extra. GSL's "tolerance" and
-# "test factor" values have been abandoned in favour of lower and upper bounds.
-Ai_results = []
-Ai_file = Path(__file__).parent / 'test_airy_Ai.csv'
-with Ai_file.open() as Ai:
-    csv_reader = csv.reader(Ai)
-    # Skip header row.
-    next(csv_reader)
-    for (x, y_unscaled, y_scaled) in csv_reader:
-        xval = float(x)
-        yval_unscaled = Decimal(y_unscaled)
-        yval_scaled = Decimal(y_scaled)
-
-        # Convert expected values to their IEEE 754 binary representations at
-        # double, single, and half precisions. Add/subtract 1 (changing the
-        # least significant bit of the significand) from these to get the upper
-        # and lower bounds at each precision. Then convert these back into
-        # floats using the appropriate precision.
-        Ai_results.append((xval, bounds(yval_unscaled), bounds(yval_scaled)))
-
+# Airy function tests. These include all of those in GSL's own test suite
+# (namely, the file test_airy.c), plus a few extra. GSL's "tolerance" and "test
+# factor" values have been abandoned in favour of lower and upper bounds.
+Ai_results = readtests('test_airy_Ai.csv')
 
 # Test cases.
 class TestAiry(unittest.TestCase):
