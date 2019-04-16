@@ -61,7 +61,7 @@ def bounds(n, loosen_double=False):
         else:
             # GSL does not achieve its advertised precision at double accuracy.
             # This causes python-gsl tests to fail.
-            if precision == DOUBLE:
+            if loosen_double and precision == DOUBLE:
                 offset = 2 ** 14
             else:
                 offset = 1
