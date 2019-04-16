@@ -7,6 +7,14 @@ aim is to be a comprehensive, Pythonic interface to this library.
 
 .. _`GNU Scientific Library`: https://www.gnu.org/software/gsl/
 
+Version support
+===============
+Python-gsl is written for version 1.16 of the GNU Scientific Library, and
+should be compatible with later releases as well.
+
+Some features in the unit tests require Python 3.6 or later, but the module
+itself can be used on Python 3.4 or later.
+
 License
 =======
 
