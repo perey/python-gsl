@@ -54,7 +54,15 @@ def bounds(n):
     bounds_dict = {}
     for precision in (DOUBLE, SINGLE, APPROX):
         n_as_int = int_from_float(n, precision)
-        low_as_int, high_as_int = n_as_int - 1, n_as_int + 1
+
+        # At half precision, some values may be too small to distinguish from
+        # zero. The smallest negative half-precision float maps to the unsigned
+        # short integer 32769.
+        if n_as_int == 0:
+            low_as_int = 32769
+            high_as_int = n_as_int + 1
+        else:
+            low_as_int, high_as_int = n_as_int - 1, n_as_int + 1
         low, high = (float_from_int(low_as_int, precision),
                      float_from_int(high_as_int, precision))
         bounds_dict[precision] = (low, float(n), high)
