@@ -38,6 +38,7 @@ from gsl.sf import airy
 Ai_results = readtests('test_airy_Ai.csv')
 Bi_results = readtests('test_airy_Bi.csv')
 Ai_deriv_results = readtests('test_airy_Ai_deriv.csv')
+Bi_deriv_results = readtests('test_airy_Bi_deriv.csv')
 
 # Test cases.
 class TestAiry(unittest.TestCase):
@@ -268,7 +269,6 @@ class TestAiry(unittest.TestCase):
                                        ' level {}'.format(x, precision))
                     self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
 
-
     def test_Ai_deriv(self):
         """Test Ai_deriv(x) with default precision."""
         for x, y_bounds, _ in Ai_deriv_results:
@@ -375,6 +375,116 @@ class TestAiry(unittest.TestCase):
                     self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
 
                     err_outofbounds = ('Ai_deriv_e({:.6}) not in bounds at '
+                                       'precision level {}'.format(x,
+                                                                   precision))
+                    self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
+
+    def test_Bi_deriv(self):
+        """Test Bi_deriv(x) with default precision."""
+        for x, y_bounds, _ in Bi_deriv_results:
+            with self.subTest(x=x):
+                y_actual = airy.Bi_deriv(x, scaled=False)
+                default_bounds = y_bounds[DEFAULT]
+                err_msg = 'Bi_deriv({:.6}) not in bounds'.format(x)
+                self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
+
+    def test_Bi_deriv_scaled(self):
+        """Test Bi_deriv(x) with default precision, scaled."""
+        for x, _, y_bounds in Bi_deriv_results:
+            with self.subTest(x=x):
+                y_actual = airy.Bi_deriv(x, scaled=True)
+                default_bounds = y_bounds[DEFAULT]
+                err_msg = 'Bi_deriv({:.6}) not in bounds'.format(x)
+                self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
+
+    def test_Bi_deriv_modes(self):
+        """Test Bi_deriv(x) with varying precision."""
+        for x, y_bounds, _ in Bi_deriv_results:
+            for precision in y_bounds:
+                with self.subTest(x=x, precision=precision):
+                    y_actual = airy.Bi_deriv(x, precision, scaled=False)
+                    bounds = y_bounds[precision]
+                    err_msg = ('Bi_deriv({:.6}) not in bounds at precision '
+                               'level {}'.format(x, precision))
+                    self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
+
+    def test_Bi_deriv_modes_scaled(self):
+        """Test Bi_deriv(x) with varying precision, scaled."""
+        for x, _, y_bounds in Bi_deriv_results:
+            for precision in y_bounds:
+                with self.subTest(x=x, precision=precision):
+                    y_actual = airy.Bi_deriv(x, precision, scaled=True)
+                    bounds = y_bounds[precision]
+                    err_msg = ('Bi_deriv({:.6}) not in bounds at precision '
+                               'level {}'.format(x, precision))
+                    self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
+
+    def test_Bi_deriv_e(self):
+        """Test Bi_deriv_e(x) with default precision."""
+        for x, y_bounds, _ in Bi_deriv_results:
+            with self.subTest(x=x):
+                val, err = airy.Bi_deriv_e(x, scaled=False)
+                default_bounds = y_bounds[DEFAULT]
+
+                err_failerr = ('Bi_deriv_e({:.6}) not within claimed error '
+                               '(±{:.6})'.format(x, err))
+                _, y, _ = default_bounds
+                self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
+
+                err_outofbounds = 'Bi_deriv_e({:.6}) not in bounds'.format(x)
+                self.assertFloatInBounds(val, default_bounds,
+                                         msg=err_outofbounds)
+
+    def test_Bi_deriv_e_scaled(self):
+        """Test Bi_deriv_e(x) with default precision, scaled."""
+        for x, _, y_bounds in Bi_deriv_results:
+            with self.subTest(x=x):
+                val, err = airy.Bi_deriv_e(x, scaled=True)
+                default_bounds = y_bounds[DEFAULT]
+
+                err_failerr = ('Bi_deriv_e({:.6}) not within claimed error '
+                               '(±{:.6})'.format(x, err))
+                _, y, _ = default_bounds
+                self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
+
+                err_outofbounds = 'Bi_deriv_e({:.6}) not in bounds'.format(x)
+                self.assertFloatInBounds(val, default_bounds,
+                                         msg=err_outofbounds)
+
+    def test_Bi_deriv_e_modes(self):
+        """Test Bi_deriv_e(x) with varying precision."""
+        for x, y_bounds, _ in Bi_deriv_results:
+            for precision in y_bounds:
+                with self.subTest(x=x, precision=precision):
+                    val, err = airy.Bi_deriv_e(x, precision, scaled=False)
+                    bounds = y_bounds[precision]
+
+                    err_failerr = ('Bi_deriv_e({:.6}) not within claimed '
+                                   'error (±{:.6}) at precision level '
+                                   '{}'.format(x, err, precision))
+                    _, y, _ = bounds
+                    self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
+
+                    err_outofbounds = ('Bi_deriv_e({:.6}) not in bounds at '
+                                       'precision level {}'.format(x,
+                                                                   precision))
+                    self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
+
+    def test_Bi_deriv_e_modes_scaled(self):
+        """Test Bi_deriv_e(x) with varying precision, scaled."""
+        for x, _, y_bounds in Bi_deriv_results:
+            for precision in y_bounds:
+                with self.subTest(x=x, precision=precision):
+                    val, err = airy.Bi_deriv_e(x, precision, scaled=True)
+                    bounds = y_bounds[precision]
+
+                    err_failerr = ('Bi_deriv_e({:.6}) not within claimed '
+                                   'error (±{:.6}) at precision level '
+                                   '{}'.format(x, err, precision))
+                    _, y, _ = bounds
+                    self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
+
+                    err_outofbounds = ('Bi_deriv_e({:.6}) not in bounds at '
                                        'precision level {}'.format(x,
                                                                    precision))
                     self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
