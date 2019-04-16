@@ -36,6 +36,7 @@ from gsl.sf import airy
 # (namely, the file test_airy.c), plus a few extra. GSL's "tolerance" and "test
 # factor" values have been abandoned in favour of lower and upper bounds.
 Ai_results = readtests('test_airy_Ai.csv')
+Bi_results = readtests('test_airy_Bi.csv')
 
 # Test cases.
 class TestAiry(unittest.TestCase):
@@ -154,5 +155,114 @@ class TestAiry(unittest.TestCase):
                     self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
 
                     err_outofbounds = ('Ai_e({:.6}) not in bounds at precision'
+                                       ' level {}'.format(x, precision))
+                    self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
+
+
+    def test_Bi(self):
+        """Test the Airy function Bi(x) with default precision."""
+        for x, y_bounds, _ in Bi_results:
+            with self.subTest(x=x):
+                y_actual = airy.Bi(x, scaled=False)
+                default_bounds = y_bounds[DEFAULT]
+                err_msg = 'Bi({:.6}) not in bounds'.format(x)
+                self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
+
+    def test_Bi_scaled(self):
+        """Test the scaled Airy function Bi(x) with default precision."""
+        for x, _, y_bounds in Bi_results:
+            with self.subTest(x=x):
+                y_actual = airy.Bi(x, scaled=True)
+                default_bounds = y_bounds[DEFAULT]
+                err_msg = 'Bi({:.6}) not in bounds'.format(x)
+                self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
+
+    def test_Bi_modes(self):
+        """Test the Airy function Bi(x) with varying precision."""
+        for x, y_bounds, _ in Bi_results:
+            for precision in y_bounds:
+                with self.subTest(x=x, precision=precision):
+                    y_actual = airy.Bi(x, precision, scaled=False)
+                    bounds = y_bounds[precision]
+                    err_msg = ('Bi({:.6}) not in bounds at precision level '
+                               '{}'.format(x, precision))
+                    self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
+
+    def test_Bi_modes_scaled(self):
+        """Test the scaled Airy function Bi(x) with varying precision."""
+        for x, _, y_bounds in Bi_results:
+            for precision in y_bounds:
+                with self.subTest(x=x, precision=precision):
+                    y_actual = airy.Bi(x, precision, scaled=True)
+                    bounds = y_bounds[precision]
+                    err_msg = ('Bi({:.6}) not in bounds at precision level '
+                               '{}'.format(x, precision))
+                    self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
+
+    def test_Bi_e(self):
+        """Test the Airy function Bi_e(x) with default precision."""
+        for x, y_bounds, _ in Bi_results:
+            with self.subTest(x=x):
+                val, err = airy.Bi_e(x, scaled=False)
+                default_bounds = y_bounds[DEFAULT]
+
+                err_failerr = ('Bi_e({:.6}) not within claimed error '
+                               '(±{:.6})'.format(x, err))
+                _, y, _ = default_bounds
+                self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
+
+                err_outofbounds = 'Bi_e({:.6}) not in bounds'.format(x)
+                self.assertFloatInBounds(val, default_bounds,
+                                         msg=err_outofbounds)
+
+    def test_Bi_e_scaled(self):
+        """Test the scaled Airy function Bi_e(x) with default precision."""
+        for x, _, y_bounds in Bi_results:
+            with self.subTest(x=x):
+                val, err = airy.Bi_e(x, scaled=True)
+                default_bounds = y_bounds[DEFAULT]
+
+                err_failerr = ('Bi_e({:.6}) not within claimed error '
+                               '(±{:.6})'.format(x, err))
+                _, y, _ = default_bounds
+                self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
+
+                err_outofbounds = 'Bi_e({:.6}) not in bounds'.format(x)
+                self.assertFloatInBounds(val, default_bounds,
+                                         msg=err_outofbounds)
+
+    def test_Bi_e_modes(self):
+        """Test the Airy function Bi_e(x) with varying precision."""
+        for x, y_bounds, _ in Bi_results:
+            for precision in y_bounds:
+                with self.subTest(x=x, precision=precision):
+                    val, err = airy.Bi_e(x, precision, scaled=False)
+                    bounds = y_bounds[precision]
+
+                    err_failerr = ('Bi_e({:.6}) not within claimed error '
+                                   '(±{:.6}) at precision level '
+                                   '{}'.format(x, err, precision))
+                    _, y, _ = bounds
+                    self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
+
+                    err_outofbounds = ('Bi_e({:.6}) not in bounds at precision'
+                                       ' level {}'.format(x, precision))
+                    self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
+
+    def test_Bi_e_modes_scaled(self):
+        """Test the scaled Airy function Bi_e(x) with varying precision."""
+        for x, _, y_bounds in Bi_results:
+            for precision in y_bounds:
+                with self.subTest(x=x, precision=precision):
+                    val, err = airy.Bi_e(x, precision, scaled=True)
+                    bounds = y_bounds[precision]
+
+                    err_failerr = ('Bi_e({:.6}) not within claimed error '
+                                   '(±{:.6}) at precision level '
+                                   '{}'.format(x, err, precision))
+                    _, y, _ = bounds
+                    self.assertAlmostEqual(val, y, delta=err, msg=err_failerr)
+
+                    err_outofbounds = ('Bi_e({:.6}) not in bounds at precision'
                                        ' level {}'.format(x, precision))
                     self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
