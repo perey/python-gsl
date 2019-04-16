@@ -53,8 +53,8 @@ def bounds(n):
         n_as_int = int_from_float(n, precision)
 
         # At half precision, some values may be too small to distinguish from
-        # zero. The smallest negative half-precision float maps to the unsigned
-        # short integer 32769.
+        # zero, so subtracting 1 would cause integer underflow. The smallest
+        # negative half-precision float maps to the unsigned short 32769.
         if n_as_int == 0:
             low_as_int = 32769
             high_as_int = n_as_int + 1
@@ -79,16 +79,11 @@ def readtests(filename):
         # Skip header row.
         next(csv_reader)
 
-        for (x, y_unscaled, y_scaled) in csv_reader:
-            xval = float(x)
-            yval_unscaled = Decimal(y_unscaled)
-            yval_scaled = Decimal(y_scaled)
+        for (in_val, *out_vals) in csv_reader:
+            # The first value is the input and stays as-is. Later values are
+            # output and need to be converted to bounds.
+            test_case = [float(in_val)]
+            test_case.extend(bounds(Decimal(val)) for val in out_vals)
 
-            # Convert expected values to their IEEE 754 binary representations
-            # at double, single, and half precisions. Add/subtract 1 (changing
-            # the least significant bit of the significand) from these to get
-            # the upper and lower bounds at each precision. Then convert these
-            # back into  floats using the appropriate precision.
-            tests.append((xval, bounds(yval_unscaled), bounds(yval_scaled)))
-
+            tests.append(test_case)
     return tests
