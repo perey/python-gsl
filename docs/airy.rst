@@ -18,8 +18,8 @@ In Abramowitz and Stegun, the Airy functions are covered in section 10.4
 
 Note that the GSL_ Airy functions accept only real arguments.
 
-Airy functions
-==============
+The Airy functions
+==================
 
 .. py:function:: Ai(x, precision=Mode.default, scaled=False)
 
@@ -41,8 +41,8 @@ factor is applied. For :math:`x < 0`, the scaling factor is 1. For
 :math:`x > 0`, over which :math:`Bi(x) \to \infty`, the scaling factor is
 :math:`s(x) = \exp \left( -\frac{2}{3} x^\frac{3}{2} \right)`.
 
-Derivatives of Airy functions
-=============================
+Derivatives of the Airy functions
+=================================
 
 .. py:function:: Ai_deriv(x, precision=Mode.default, scaled=False)
 
@@ -53,10 +53,11 @@ Derivatives of Airy functions
 .. py:function:: Bi_deriv_e(x, precision=Mode.default, scaled=False)
 
 Evaluate :math:`Ai'(x)` and :math:`Bi'(x)`, the derivatives of the Airy
-functions of the first and second kinds.
+functions of the first and second kinds. For the scaling factors used when
+``scaled`` is ``True``, see the section on `the Airy functions`_ above.
 
-Zeroes of Airy functions and of derivatives
-===========================================
+Zeroes of the Airy functions and of their derivatives
+=====================================================
 
 .. py:function:: zero_Ai(s, precision=Mode.default)
 

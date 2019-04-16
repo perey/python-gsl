@@ -53,7 +53,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'python-gsl'
-copyright = '2016, 2017 Timothy Pederick'
+copyright = '2016, 2017, 2019 Timothy Pederick'
 author = 'Timothy Pederick'
 
 # The version info for the project you're documenting, acts as replacement for
