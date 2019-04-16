@@ -52,7 +52,7 @@ class TestAiry(unittest.TestCase):
         self.assertLessEqual(f, h, msg=msg)
 
     def test_Ai(self):
-        """Test the Airy function Ai(x) with default precision."""
+        """Test Ai(x) with default precision."""
         for x, y_bounds, _ in Ai_results:
             with self.subTest(x=x):
                 y_actual = airy.Ai(x, scaled=False)
@@ -61,7 +61,7 @@ class TestAiry(unittest.TestCase):
                 self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
 
     def test_Ai_scaled(self):
-        """Test the scaled Airy function Ai(x) with default precision."""
+        """Test Ai(x) with default precision, scaled."""
         for x, _, y_bounds in Ai_results:
             with self.subTest(x=x):
                 y_actual = airy.Ai(x, scaled=True)
@@ -70,7 +70,7 @@ class TestAiry(unittest.TestCase):
                 self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
 
     def test_Ai_modes(self):
-        """Test the Airy function Ai(x) with varying precision."""
+        """Test Ai(x) with varying precision."""
         for x, y_bounds, _ in Ai_results:
             for precision in y_bounds:
                 with self.subTest(x=x, precision=precision):
@@ -81,7 +81,7 @@ class TestAiry(unittest.TestCase):
                     self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
 
     def test_Ai_modes_scaled(self):
-        """Test the scaled Airy function Ai(x) with varying precision."""
+        """Test Ai(x) with varying precision, scaled."""
         for x, _, y_bounds in Ai_results:
             for precision in y_bounds:
                 with self.subTest(x=x, precision=precision):
@@ -92,7 +92,7 @@ class TestAiry(unittest.TestCase):
                     self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
 
     def test_Ai_e(self):
-        """Test the Airy function Ai_e(x) with default precision."""
+        """Test Ai_e(x) with default precision."""
         for x, y_bounds, _ in Ai_results:
             with self.subTest(x=x):
                 val, err = airy.Ai_e(x, scaled=False)
@@ -108,7 +108,7 @@ class TestAiry(unittest.TestCase):
                                          msg=err_outofbounds)
 
     def test_Ai_e_scaled(self):
-        """Test the scaled Airy function Ai_e(x) with default precision."""
+        """Test Ai_e(x) with default precision, scaled."""
         for x, _, y_bounds in Ai_results:
             with self.subTest(x=x):
                 val, err = airy.Ai_e(x, scaled=True)
@@ -124,7 +124,7 @@ class TestAiry(unittest.TestCase):
                                          msg=err_outofbounds)
 
     def test_Ai_e_modes(self):
-        """Test the Airy function Ai_e(x) with varying precision."""
+        """Test Ai_e(x) with varying precision."""
         for x, y_bounds, _ in Ai_results:
             for precision in y_bounds:
                 with self.subTest(x=x, precision=precision):
@@ -142,7 +142,7 @@ class TestAiry(unittest.TestCase):
                     self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
 
     def test_Ai_e_modes_scaled(self):
-        """Test the scaled Airy function Ai_e(x) with varying precision."""
+        """Test Ai_e(x) with varying precision, scaled."""
         for x, _, y_bounds in Ai_results:
             for precision in y_bounds:
                 with self.subTest(x=x, precision=precision):
@@ -161,7 +161,7 @@ class TestAiry(unittest.TestCase):
 
 
     def test_Bi(self):
-        """Test the Airy function Bi(x) with default precision."""
+        """Test Bi(x) with default precision."""
         for x, y_bounds, _ in Bi_results:
             with self.subTest(x=x):
                 y_actual = airy.Bi(x, scaled=False)
@@ -170,7 +170,7 @@ class TestAiry(unittest.TestCase):
                 self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
 
     def test_Bi_scaled(self):
-        """Test the scaled Airy function Bi(x) with default precision."""
+        """Test Bi(x) with default precision, scaled."""
         for x, _, y_bounds in Bi_results:
             with self.subTest(x=x):
                 y_actual = airy.Bi(x, scaled=True)
@@ -179,7 +179,7 @@ class TestAiry(unittest.TestCase):
                 self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
 
     def test_Bi_modes(self):
-        """Test the Airy function Bi(x) with varying precision."""
+        """Test Bi(x) with varying precision."""
         for x, y_bounds, _ in Bi_results:
             for precision in y_bounds:
                 with self.subTest(x=x, precision=precision):
@@ -190,7 +190,7 @@ class TestAiry(unittest.TestCase):
                     self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
 
     def test_Bi_modes_scaled(self):
-        """Test the scaled Airy function Bi(x) with varying precision."""
+        """Test Bi(x) with varying precision, scaled."""
         for x, _, y_bounds in Bi_results:
             for precision in y_bounds:
                 with self.subTest(x=x, precision=precision):
@@ -201,7 +201,7 @@ class TestAiry(unittest.TestCase):
                     self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
 
     def test_Bi_e(self):
-        """Test the Airy function Bi_e(x) with default precision."""
+        """Test Bi_e(x) with default precision."""
         for x, y_bounds, _ in Bi_results:
             with self.subTest(x=x):
                 val, err = airy.Bi_e(x, scaled=False)
@@ -217,7 +217,7 @@ class TestAiry(unittest.TestCase):
                                          msg=err_outofbounds)
 
     def test_Bi_e_scaled(self):
-        """Test the scaled Airy function Bi_e(x) with default precision."""
+        """Test Bi_e(x) with default precision, scaled."""
         for x, _, y_bounds in Bi_results:
             with self.subTest(x=x):
                 val, err = airy.Bi_e(x, scaled=True)
@@ -233,7 +233,7 @@ class TestAiry(unittest.TestCase):
                                          msg=err_outofbounds)
 
     def test_Bi_e_modes(self):
-        """Test the Airy function Bi_e(x) with varying precision."""
+        """Test Bi_e(x) with varying precision."""
         for x, y_bounds, _ in Bi_results:
             for precision in y_bounds:
                 with self.subTest(x=x, precision=precision):
@@ -251,7 +251,7 @@ class TestAiry(unittest.TestCase):
                     self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
 
     def test_Bi_e_modes_scaled(self):
-        """Test the scaled Airy function Bi_e(x) with varying precision."""
+        """Test Bi_e(x) with varying precision, scaled."""
         for x, _, y_bounds in Bi_results:
             for precision in y_bounds:
                 with self.subTest(x=x, precision=precision):
@@ -270,7 +270,7 @@ class TestAiry(unittest.TestCase):
 
 
     def test_Ai_deriv(self):
-        """Test the Airy derivative Ai_deriv(x) with default precision."""
+        """Test Ai_deriv(x) with default precision."""
         for x, y_bounds, _ in Ai_deriv_results:
             with self.subTest(x=x):
                 y_actual = airy.Ai_deriv(x, scaled=False)
@@ -279,7 +279,7 @@ class TestAiry(unittest.TestCase):
                 self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
 
     def test_Ai_deriv_scaled(self):
-        """Test the scaled Airy derivative Ai_deriv(x) with default precision."""
+        """Test Ai_deriv(x) with default precision, scaled."""
         for x, _, y_bounds in Ai_deriv_results:
             with self.subTest(x=x):
                 y_actual = airy.Ai_deriv(x, scaled=True)
@@ -288,7 +288,7 @@ class TestAiry(unittest.TestCase):
                 self.assertFloatInBounds(y_actual, default_bounds, msg=err_msg)
 
     def test_Ai_deriv_modes(self):
-        """Test the Airy derivative Ai_deriv(x) with varying precision."""
+        """Test Ai_deriv(x) with varying precision."""
         for x, y_bounds, _ in Ai_deriv_results:
             for precision in y_bounds:
                 with self.subTest(x=x, precision=precision):
@@ -299,7 +299,7 @@ class TestAiry(unittest.TestCase):
                     self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
 
     def test_Ai_deriv_modes_scaled(self):
-        """Test the scaled Airy derivative Ai_deriv(x) with varying precision."""
+        """Test Ai_deriv(x) with varying precision, scaled."""
         for x, _, y_bounds in Ai_deriv_results:
             for precision in y_bounds:
                 with self.subTest(x=x, precision=precision):
@@ -310,7 +310,7 @@ class TestAiry(unittest.TestCase):
                     self.assertFloatInBounds(y_actual, bounds, msg=err_msg)
 
     def test_Ai_deriv_e(self):
-        """Test the Airy derivative Ai_deriv_e(x) with default precision."""
+        """Test Ai_deriv_e(x) with default precision."""
         for x, y_bounds, _ in Ai_deriv_results:
             with self.subTest(x=x):
                 val, err = airy.Ai_deriv_e(x, scaled=False)
@@ -326,7 +326,7 @@ class TestAiry(unittest.TestCase):
                                          msg=err_outofbounds)
 
     def test_Ai_deriv_e_scaled(self):
-        """Test the scaled Airy derivative Ai_deriv_e(x) with default precision."""
+        """Test Ai_deriv_e(x) with default precision, scaled."""
         for x, _, y_bounds in Ai_deriv_results:
             with self.subTest(x=x):
                 val, err = airy.Ai_deriv_e(x, scaled=True)
@@ -342,7 +342,7 @@ class TestAiry(unittest.TestCase):
                                          msg=err_outofbounds)
 
     def test_Ai_deriv_e_modes(self):
-        """Test the Airy derivative Ai_deriv_e(x) with varying precision."""
+        """Test Ai_deriv_e(x) with varying precision."""
         for x, y_bounds, _ in Ai_deriv_results:
             for precision in y_bounds:
                 with self.subTest(x=x, precision=precision):
@@ -361,7 +361,7 @@ class TestAiry(unittest.TestCase):
                     self.assertFloatInBounds(val, bounds, msg=err_outofbounds)
 
     def test_Ai_deriv_e_modes_scaled(self):
-        """Test the scaled Airy derivative Ai_deriv_e(x) with varying precision."""
+        """Test Ai_deriv_e(x) with varying precision, scaled."""
         for x, _, y_bounds in Ai_deriv_results:
             for precision in y_bounds:
                 with self.subTest(x=x, precision=precision):
