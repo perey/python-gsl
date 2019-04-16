@@ -35,10 +35,10 @@ from gsl.sf import airy
 # Airy function tests. These include all of those in GSL's own test suite
 # (namely, the file test_airy.c), plus a few extra. GSL's "tolerance" and "test
 # factor" values have been abandoned in favour of lower and upper bounds.
-Ai_results = readtests('test_airy_Ai.csv')
-Bi_results = readtests('test_airy_Bi.csv')
-Ai_deriv_results = readtests('test_airy_Ai_deriv.csv')
-Bi_deriv_results = readtests('test_airy_Bi_deriv.csv')
+Ai_results = readtests('test_airy_Ai.csv', loosen_double=True)
+Bi_results = readtests('test_airy_Bi.csv', loosen_double=True)
+Ai_deriv_results = readtests('test_airy_Ai_deriv.csv', loosen_double=True)
+Bi_deriv_results = readtests('test_airy_Bi_deriv.csv', loosen_double=True)
 
 # Test cases.
 class TestAiry(unittest.TestCase):
